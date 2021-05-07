@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/_fragments :: head(~{::title})">
+    <meta charset="UTF-8">
+    <!--    移动端缩放设置-->
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
+    <title>标签新增</title>
+    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/me.css">
+    <!--    editor.md-->
+    <link rel="stylesheet" href="../../static/lib/editormd/css/editormd.css">
+    <script src="../../static/lib/editormd/editormd.min.js"></script>
+</head>
+<body>
+<!--    导航-->
+<nav th:replace="admin/_fragments :: menu(3)" class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+    <div class="ui container ">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui blue theader item">博客管理后台</h2>
+            <a href="#" class=" m-item item m-mobile-hide m-magin-top-tiny"><i class="home icon"></i>博客</a>
+            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="idea icon"></i>标签</a>
+            <a href="#" class="active m-item item m-mobile-hide m-magin-top-tiny"><i class="tags icon"></i>标签</a>
+            <div class="m-item m-mobile-hide right menu">
+                <div class="ui  dropdown item">
+                    <div class="text">
+                        <img class="ui avatar image" src="../../static/image/03.jpg">
+                        Allan
+                    </div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a href="" class="item">注销</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="m-menu ui black icon button m-right-top m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+
+
+<!--    中间部分-->
+<div class="m-padded-tb-big m-container-small">
+    <br>
+    <br>
+    <div class="ui container">
+        <div class="ui segment">
+
+            <br>
+            <br>
+            <!--表单-->
+            <form action="#" th:object="${tag}" th:action="*{id}==null ? @{/admin/tags} : @{/admin/tags/{id}(id=*{id})}" method="post" class="ui form">
+                <input type="hidden" name="id" th:value="*{id}">
+                <div class="required field">
+                    <div class="ui left labeled input">
+                        <div class="ui compact blue basic label">标签</div>
+                        <!--把表单信息赋值给tag对象的name属性-->
+                        <input type="text" name="name" placeholder="标签名称" th:value="*{name}">
+                    </div>
+                </div>
+
+                <div class="ui error message"></div>
+
+                <!--后端验证,验证域name是否有错-->
+                <!--/*/
+                <div class="ui negative message" th:if="${#fields.hasErrors('name')}"  >
+                  <i class="close icon"></i>
+                  <div class="header">验证失败</div>
+                  <p th:errors="*{name}">提交信息不符合规则</p>
+                </div>
+                 /*/-->
+
+
+                <!--按钮-->
+                <div class="ui right aligned container">
+                    <button type="button" class="ui button" onclick="window.history.go(-1)">返回</button>
+
+                    <button class="ui blue submit button">提交</button>
+                </div>
+            </form>
+
+            <br>
+            <br>
+
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+</div>
+
+<!--    footer-->
+<footer th:replace="admin/_fragments :: footer" class="ui inverted vertical segment m-padded-tb-massive">
+    <div class="ui center aligned container">
+        <!--            与BootStrap不同 水平空间划分为16份-->
+        <div class="ui inverted divided stackable grid">
+            <div class="three wide column">
+                <div class="ui inverted link list">
+                    <div class="item">
+                        <img src="../../static/image/01.jpg" class="ui rounded image" alt="" style="width: 100px">
+                    </div>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header m-text-spaced">最新博客</h4>
+                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
+                    <a href="#" class="item m-white">用户故事</a>
+                    <a href="#" class="item m-white">用户故事</a>
+                    <a href="#" class="item m-white">用户故事</a>
+                </div>
+            </div>
+            <div class="four wide column">
+                <h4 class="ui inverted header m-text-spaced">联系我</h4>
+                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
+                    <a href="#" class="item m-white">Email：allandeng97@foxmail.com</a>
+                    <a href="#" class="item m-white">Github：allandengcn</a>
+                </div>
+            </div>
+            <div class="six wide column">
+                <h4 class="ui inverted header m-text-spaced">AllanDeng</h4>
+                <p class="m-text-thin m-text-spaced m-opacity-mini  m-white">这是我的个人博客。这是我的个人博客。这是我的个人博客。这是我的个人博客。</p>
+            </div>
+        </div>
+    </div>
+    <div class="ui inverted section divider"></div>
+    <div class="ui center aligned container m-text-thin m-text-spaced m-opacity-mini">
+        Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .
+        <br>
+        <a href="http://www.miitbeian.gov.cn/" class="item  m-white">鄂ICP备 19011531号</a>
+    </div>
+</footer>
+
+<!--/*/<th:block th:replace="admin/_fragments :: script">/*/-->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.js"></script>
+<script src="../../static/lib/editormd/editormd.min.js"></script>
+<!--/*/</th:block>/*/-->
+<!--顶部导航栏菜单按钮的显示与隐藏-->
+<script>
+    //初始化编辑器
+    var mdEditor;
+    $(function () {
+        //emoji配置
+        editormd.emoji = {
+            path: "http://www.emoji-cheat-sheet.com/graphics/emojis/",
+            ext: ".png"
+        };
+        editormd.twemoji = {
+            path: "http://twemoji.maxcdn.com/72x72/",
+            ext: ".png"
+        };
+
+        mdEditor = editormd("md-content", {
+            width: "100%",
+            height: 720,
+            toc: true,
+            emoji: true,
+            taskList: true,
+            syncScrolling: "single",
+            path: "../static/lib/editormd/lib/"
+        });
+
+        /*
+        // or
+        testEditor = editormd({
+            id      : "test-editormd",
+            width   : "90%",
+            height  : 640,
+            path    : "../lib/"
+        });
+        */
+    });
+
+    $('.m-menu').click(function () {
+        $('.m-item').toggleClass('m-mobile-hide');
+    });
+
+    $('.ui.dropdown')
+        .dropdown({
+            on: 'hover'
+        })
+    ;
+
+    $('.ui.form').form({
+        fields: {
+            title: {
+                identifier: 'name',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入标签名称'
+                }]
+            }
+        }
+    });
+
+</script>
+
+
+</body>
+</html>

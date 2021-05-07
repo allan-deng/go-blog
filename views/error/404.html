@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="_fragments :: head(~{::title})">
+    <meta charset="UTF-8">
+    <!--    移动端缩放设置-->
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
+    <title>404-找不到网页</title>
+    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/me.css">
+</head>
+<body>
+
+    <!--导航-->
+    <nav th:replace="_fragments :: menu(0)" class="ui inverted attached segment m-padded-tb-mini  m-shadow-small">
+    <div class="ui container ">
+        <div class="ui inverted secondary stackable menu">
+            <h2 class="ui blue theader item">Blog</h2>
+            <a href="#" class="active m-item item m-mobile-hide m-magin-top-tiny"><i class="home icon"></i>首页</a>
+            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="idea icon"></i>分类</a>
+            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="tags icon"></i>标签</a>
+            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="clipboard icon"></i>归档</a>
+            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="info icon"></i>关于我</a>
+            <div class="m-item right item  m-mobile-hide m-magin-top-tiny">
+                <div class="ui icon inverted transparent input">
+                    <label>
+                        <input type="text" placeholder="搜索">
+                    </label>
+                    <i class="search link  icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="m-menu ui black icon button m-right-top m-mobile-show">
+        <i class="sidebar icon"></i>
+    </a>
+</nav>
+
+
+    <div class="m-container-small m-padded-tb-massive">
+        <div class="ui error message">
+            <div class="ui container  m-padded-tb-huge center aligned ">
+               <h1>404</h1>
+                <br>
+                <h3>
+                    对不起，您访问的资源不存在。
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <!--    footer-->
+    <footer th:replace="_fragments :: footer" class="ui inverted vertical segment m-padded-tb-massive">
+        <div class="ui center aligned container">
+            <!--            与BootStrap不同 水平空间划分为16份-->
+            <div class="ui inverted divided stackable grid">
+                <div class="three wide column">
+                    <div class="ui inverted link list">
+                        <div class="item">
+                            <img src="../../static/image/01.jpg" th:src="@{/image/01.jpg}" class="ui rounded image" alt="" style="width: 100px">
+                        </div>
+                    </div>
+                </div>
+                <div class="three wide column">
+                    <h4 class="ui inverted header m-text-spaced">最新博客</h4>
+                    <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
+                        <a href="#" class="item m-white">用户故事</a>
+                        <a href="#" class="item m-white">用户故事</a>
+                        <a href="#" class="item m-white">用户故事</a>
+                        <a href="#" class="item m-white">用户故事</a>
+                    </div>
+                </div>
+                <div class="four wide column">
+                    <h4 class="ui inverted header m-text-spaced">联系我</h4>
+                    <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
+                        <a href="#" class="item m-white">Email：allandeng97@foxmail.com</a>
+                        <a href="#" class="item m-white">Github：allandengcn</a>
+                    </div>
+                </div>
+                <div class="six wide column">
+                    <h4 class="ui inverted header m-text-spaced">AllanDeng</h4>
+                    <p class="m-text-thin m-text-spaced m-opacity-mini  m-white">这是我的个人博客。这是我的个人博客。这是我的个人博客。这是我的个人博客。</p>
+                </div>
+            </div>
+        </div>
+        <div class="ui inverted section divider"></div>
+        <div class="ui center aligned container m-text-thin m-text-spaced m-opacity-mini">
+            Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .
+            <br>
+            <a href="http://www.miitbeian.gov.cn/" class="item  m-white">鄂ICP备 19011531号</a>
+        </div>
+    </footer>
+
+</body>
+</html>

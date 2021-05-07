@@ -1,0 +1,16 @@
+mysql:
+  host: localhost:3306
+  user: tigerwolfc
+  pwd: 654321
+  dbname: tablename
+web:
+  port: 8080
+webpage:
+  icpinfo: '鄂ICP备 19011531号-1'
+log:
+  prefix: ''
+  log-file: true
+  stdout: 'DEBUG'
+  file: 'DEBUG'
+  logfilepath: './log'
+  modulename: 'test-log'

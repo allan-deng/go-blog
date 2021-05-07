@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="admin/_fragments :: head(~{::title})">
+    <meta charset="UTF-8">
+    <!--    移动端缩放设置-->
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
+    <title>后台登陆</title>
+    <!--<link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.css" rel="stylesheet">-->
+    <link rel="stylesheet" href="../../static/lib/semantic/semantic.min.css" th:href="@{/lib/semantic/semantic.min.css}">
+
+    <link rel="stylesheet" href="../../static/css/me.css">
+</head>
+<body>
+
+<!--    中间部分-->
+<div class="m-padded-tb-massive m-container-small " style="max-width: 30em !important;">
+    <div class="ui container center aligned">
+        <div class="column">
+            <h1 class="ui teal image header ">
+                <div class="content">
+                    登录到账号
+                </div>
+            </h1>
+            <form class="ui large form" method="post" action="#" th:action="@{/admin/login}">
+                <div class="ui segment">
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="user icon"></i>
+                            <input type="text" name="username" placeholder="用户名">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="lock icon"></i>
+                            <input type="password" name="password" placeholder="密码">
+                        </div>
+                    </div>
+                    <div class="field m-mobile-wide  m-magin-bottom-small">
+                        <div class="ui input" >
+                            <input type="text" name="captchacode" placeholder="验证码" style="max-width: 200px">
+
+                            <div id="captchaImg" >
+                                <div th:fragment="captcha-Img">
+                                    <img  onclick="changeCaptcha()" th:src="@{'data:img/png;base64,'+${captchaLogin}}" alt="点击更换" style="max-width: 100px">
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <button class="ui fluid large teal submit button">登 录</button>
+                </div>
+
+                <div class="ui error mini message"></div>
+                <div class="ui mini negative message" th:unless="${#strings.isEmpty(message)}" th:text="${message}">用户名或密码错误</div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+<!--/*/<th:block th:replace="admin/_fragments :: script">/*/-->
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.js"></script>
+
+<!--/*/</th:block>/*/-->
+<!--顶部导航栏菜单按钮的显示与隐藏-->
+<script>
+    $('.ui.form').form({
+        fields: {
+            username: {
+                identifier: 'username',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入用户名'
+                }]
+            },
+
+            password: {
+                identifier: 'password',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入密码'
+                }]
+            },
+
+            captchacode: {
+                identifier: 'captchacode',
+                rules: [{
+                    type: 'empty',
+                    prompt: '请输入验证码'
+                }]
+            }
+        }
+    });
+
+
+
+
+
+</script>
+</body>
+</html>

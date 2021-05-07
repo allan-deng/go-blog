@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--定义fragment需要替换的部分-->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<!--头部,传入参数 标题-->
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <!--    移动端缩放设置-->
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
+    <title th:replace="${title}">详情页</title>
+    <!--semantic-UI-->
+    <link rel="stylesheet" href="../../static/lib/semantic/semantic.min.css" th:href="@{/lib/semantic/semantic.min.css}">
+    <!--自定义样式-->
+    <link rel="stylesheet" href="../../static/css/me.css" th:href="@{/css/me.css}">
+    <!--editor.md-->
+    <link rel="stylesheet" href="../../static/lib/editormd/css/editormd.min.css" th:href="@{/lib/editormd/css/editormd.min.css}">
+</head>
+
+
+<body>
+
+<!-- 导航，传入参数active的选项-->
+
+    <nav th:fragment="menu(n)" class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
+        <div class="ui container ">
+            <div class="ui inverted secondary stackable menu">
+                <h2 class="ui blue theader item">博客管理后台</h2>
+                <a th:href="@{/}" href="#" class="m-item item m-mobile-hide m-magin-top-tiny" ><i class="home icon"></i>首页</a>
+                <a th:href="@{/admin/blogs}" href="#" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==1} ? 'active' "><i class="clipboard icon"></i>博客</a>
+                <a th:href="@{/admin/types}" href="#" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==2} ? 'active' "><i class="idea icon"></i>分类</a>
+                <a th:href="@{/admin/tags}" href="#" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==3} ? 'active' "><i class="tags icon"></i>标签</a>
+                <div class="m-item m-mobile-hide right menu">
+                    <div class="ui  dropdown item">
+                        <div class="text">
+                            <img class="ui avatar image" th:src="@{${session.user.avatar}}" src="../../static/image/03.jpg">
+                            <span th:text="${session.user.nickname}">Allan</span>
+                        </div>
+                        <i class="dropdown icon"></i>
+                        <div class="menu">
+                            <a href="" th:href="@{/admin/logout}" class="item">注销</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <a href="#" class="m-menu ui black icon button m-right-top m-mobile-show">
+            <i class="sidebar icon"></i>
+        </a>
+    </nav>
+
+<!--二级导航，传入参数active的选项-->
+<div th:fragment="navmenu(n)" class="ui attached pointing menu">
+    <div class="ui container">
+        <div class="right menu">
+            <a href="/admin/blogs/input" class=" item" th:classappend="${n==1} ? 'active' ">发布</a>
+            <a href="/admin/blogs" class=" item" th:classappend="${n==2} ? 'active' ">管理</a>
+        </div>
+    </div>
+</div>
+<!-- footer-->
+<footer th:fragment="footer" class="ui inverted vertical segment m-padded-tb-massive">
+    <div class="ui center aligned container">
+        <!--            与BootStrap不同 水平空间划分为16份-->
+        <div class="ui inverted divided stackable grid">
+            <div class="three wide column">
+                <div class="ui inverted link list">
+                    <div class="item">
+                        <img src="../static/image/01.jpg" th:src="@{/image/01.jpg}" class="ui rounded image" alt="" style="width: 100px">
+                    </div>
+                </div>
+            </div>
+            <div class="three wide column">
+                <h4 class="ui inverted header m-text-spaced">最新博客</h4>
+                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
+                    <a href="#" class="item m-white">用户故事</a>
+                    <a href="#" class="item m-white">用户故事</a>
+                    <a href="#" class="item m-white">用户故事</a>
+                    <a href="#" class="item m-white">用户故事</a>
+                </div>
+            </div>
+            <div class="four wide column">
+                <h4 class="ui inverted header m-text-spaced">联系我</h4>
+                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
+                    <a href="#" class="item m-white">Email：allandeng97@foxmail.com</a>
+                    <a href="#" class="item m-white">Github：allandengcn</a>
+                </div>
+            </div>
+            <div class="six wide column">
+                <h4 class="ui inverted header m-text-spaced">AllanDeng</h4>
+                <p class="m-text-thin m-text-spaced m-opacity-mini  m-white">这是我的个人博客。这是我的个人博客。这是我的个人博客。这是我的个人博客。</p>
+            </div>
+        </div>
+    </div>
+    <div class="ui inverted section divider"></div>
+    <div class="ui center aligned container m-text-thin m-text-spaced m-opacity-mini">
+        Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .
+        <br>
+        <a href="http://www.miitbeian.gov.cn/" class="item  m-white">鄂ICP备 19011531号</a>
+    </div>
+</footer>
+
+<!--js-->
+<th:block th:fragment="script">
+    <!--jquery-->
+    <script src="../../static/js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
+    <!--semantic UI-->
+    <script src="../../static/lib/semantic/semantic.min.js" th:src="@{/lib/semantic/semantic.min.js}"></script>
+    <!--editormd编辑器-->
+    <script src="../../static/lib/editormd/editormd.min.js" th:src="@{/lib/editormd/editormd.min.js}"></script>
+</th:block>
+
+
+</body>
+</html>
