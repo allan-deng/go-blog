@@ -1,7 +1,7 @@
 package repository
 
 type Page struct {
-	PageIndex int32
-	PageSize  int32
-	count     int32
+	Index int
+	Size  int
+	Count int
 }

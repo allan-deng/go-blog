@@ -68,12 +68,17 @@ func TestFindTypeAndBlog(t *testing.T) {
 	db.Debug().Model(&at).Related(&at.Blogs).Find(&at.Blogs)
 	var at2 model.Type
 	var at3 []model.Type
-	db.Debug().Preload("Blogs").First(&at2)
+	db.Debug().Preload("Blogs", func(db *gorm.DB) *gorm.DB {
+		return db.Order("job.job_reference DESC")
+	}).First(&at2)
 	db.Debug().Preload("Blogs").Find(&at3)
 	// db.Debug().Model(&at).Association("Blogs").Find(&at.Blogs)
 	fmt.Println(at)
 	fmt.Println(at2)
 	fmt.Println(at3)
+
+	db.Debug().Raw("").Rows()
+
 	// v, ok := res.Value.([]model.Blog)
 	// if ok {
 	// 	for b, _ := range v {

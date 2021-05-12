@@ -1,11 +1,180 @@
 package repository
 
+import (
+	"errors"
+
+	"allandeng.cn/allandeng/go-blog/model"
+	"github.com/jinzhu/gorm"
+)
+
 /*
 TODO:
-查找推荐文章
-查找已发布文章
-按照关键字和内容，分页搜索博客
-分页查找博客
+
+
+
 查找年份
 查找某年的文章
 */
+
+type IBlogRepository interface {
+	//建表
+	InitTable() error
+	//增
+	CreateBlog(*model.Blog) (int64, error)
+	//删
+	DeleteBlog(int64) error
+	//改
+	UpdateBlog(*model.Blog) error
+	//按id查找
+	FindBlogById(int64) (*model.Blog, error)
+	//分页查找全部，按createtime排序
+	FindAll(*Page) ([]model.Blog, error)
+	//模糊查找，按createtime排序
+	FindByQuery(string, *Page) ([]model.Blog, error)
+	//已推荐的文章，按updatetime排序
+	FindRecommendTop(*Page) ([]model.Blog, error)
+	//查找所有发布年份
+	FindGroupYear() ([]string, error)
+	//安年份查找，按createtime排序
+	FindByYear(string) ([]model.Blog, error)
+}
+
+type BlogRepository struct {
+	mysqlDb *gorm.DB
+}
+
+//创建blogRepository
+func NewBlogRepository(db *gorm.DB) IBlogRepository {
+	return &BlogRepository{mysqlDb: db}
+}
+
+func (s *BlogRepository) InitTable() error {
+	return s.mysqlDb.AutoMigrate(&model.Blog{}).Error
+}
+
+func (s *BlogRepository) CreateBlog(blog *model.Blog) (int64, error) {
+	err := s.mysqlDb.Create(blog).Error
+	tags := blog.Tags
+	for _, tag := range tags {
+		if len(tag.Name) != 0 {
+			//tag的名称不为空时，创建连结
+			tag := &model.Tag{}
+			if s.mysqlDb.Where("name = ?", tag.Name).First(tag).RecordNotFound() {
+				//如果不存在则插入
+				err := s.mysqlDb.Create(tag).Error
+				return 0, err
+			}
+			s.mysqlDb.Raw("INSERT INTO blog_tag ( blog_id , tag_id ) VALUES ( ?, ? )", blog.ID, tag.ID)
+		}
+	}
+	return blog.ID, err
+}
+
+func (s *BlogRepository) DeleteBlog(blogId int64) error {
+	// 先删除连结表
+	err := s.mysqlDb.Raw("delete from blog_tag where blog_id = ?", blogId).Error
+	if err != nil {
+		return err
+	}
+	return s.mysqlDb.Delete(&model.Blog{}, blogId).Error
+}
+
+func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
+	if blog.ID <= 0 {
+		return errors.New("error: cannot update type without id")
+	}
+	tags := blog.Tags
+	for _, tag := range tags {
+		if len(tag.Name) != 0 {
+			//tag的名称不为空时，创建连结
+			tag := &model.Tag{}
+			if s.mysqlDb.Where("name = ?", tag.Name).First(tag).RecordNotFound() {
+				//如果不存在则插入
+				err := s.mysqlDb.Create(tag).Error
+				return err
+			}
+			if s.mysqlDb.Raw("select * from blog_tag where blog_id = ? and tag_id = ?", blog.ID, tag.ID).RecordNotFound() {
+				//连结不存在时创建连结
+				s.mysqlDb.Raw("INSERT INTO blog_tag ( blog_id , tag_id ) VALUES ( ?, ? )", blog.ID, tag.ID)
+			}
+		}
+	}
+	return s.mysqlDb.Save(blog).Error
+}
+
+func (s *BlogRepository) FindBlogById(blogId int64) (*model.Blog, error) {
+	blog := &model.Blog{}
+	return blog, s.mysqlDb.Preload("Tags").Preload("Types").First(blog, blogId).Error
+}
+
+func (s *BlogRepository) FindAll(page *Page) ([]model.Blog, error) {
+	count := 0
+	s.mysqlDb.Model(&model.Blog{}).Count(&count)
+	page.Count = count
+	limit := page.Size
+	offset := ((page.Index - 1) * page.Size)
+
+	var res []model.Blog
+
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Preload("Types").Omit("conent").Order("create_time DESC").Find(&res).Error
+
+	return res, err
+}
+
+func (s *BlogRepository) FindRecommendTop(page *Page) ([]model.Blog, error) {
+	count := 0
+	s.mysqlDb.Model(&model.Blog{}).Count(&count)
+	page.Count = count
+	limit := page.Size
+	offset := ((page.Index - 1) * page.Size)
+
+	var res []model.Blog
+
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Preload("Types").Omit("conent").Order("update_time DESC").Where("recommend = 1").Find(&res).Error
+
+	return res, err
+}
+
+func (s *BlogRepository) FindByQuery(query string, page *Page) ([]model.Blog, error) {
+	count := 0
+	s.mysqlDb.Model(&model.Blog{}).Count(&count)
+	page.Count = count
+	limit := page.Size
+	offset := ((page.Index - 1) * page.Size)
+	query = "%" + query + "%"
+	var res []model.Blog
+
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Preload("Types").Omit("conent").Order("create_time DESC").Where("title like ? or content like ?", query, query).Find(&res).Error
+
+	return res, err
+}
+
+func (s *BlogRepository) FindGroupYear() ([]string, error) {
+	var res []string
+	rows, err := s.mysqlDb.Raw("SELECT DATE_FORMAT(b.create_time,'%Y') as year FROM blog as b  GROUP BY DATE_FORMAT(b.create_time,'%Y') order by year desc").Rows()
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var temp string
+		rows.Scan(&temp)
+		res = append(res, temp)
+	}
+	return res, err
+}
+
+func (s *BlogRepository) FindByYear(year string) ([]model.Blog, error) {
+	var res []model.Blog
+	rows, err := s.mysqlDb.Raw("select * from blog as b where DATE_FORMAT(b.create_time,'%Y') = ? order by create_time desc", year).Rows()
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var blog model.Blog
+		rows.Scan(&blog)
+		res = append(res, blog)
+	}
+	return res, err
+}
