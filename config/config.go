@@ -59,3 +59,13 @@ func LoadConfig(path string) error {
 	GlobalConfig = config
 	return err
 }
+
+func init() {
+	err := LoadConfig("./config/config.yaml")
+	if err != nil {
+		fmt.Errorf("Panic load config file failed: ")
+		panic(err)
+
+	}
+	InitLogger()
+}

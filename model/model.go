@@ -91,10 +91,12 @@ type Blog struct {
 	UpdateTime time.Time `gorm:"comment:'修改时间';default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"` //在创建时该字段值为零值或者在更新时，使用当前时间戳秒数填充
 	//文章类型
 	TypeID int64 `gorm:"comment:'文章类型id';NOT NULL;INDEX"`
+	Type   Type
 	//该博客的标签,多对多
 	Tags []Tag `gorm:"comment:'博客标签';many2many:blog_tag;"`
 	//发布用户
 	UserID int64 `gorm:"comment:'发布用户ID';NOT NULL;INDEX"`
+	User   User
 	//该博客的评论,一对多
 	Comments []Comment
 	//tag的id,用于返回给前端不存入数据库

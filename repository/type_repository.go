@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 
 	"allandeng.cn/allandeng/go-blog/model"
 	"github.com/jinzhu/gorm"
@@ -113,7 +112,6 @@ func (s *TypeRepository) FindTop(page *Page) ([]model.Type, error) {
 		if err != nil {
 			return res, err
 		}
-		fmt.Println(blogs)
 		res[i].Blogs = blogs
 	}
 	return res, err

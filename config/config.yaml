@@ -1,8 +1,8 @@
 mysql:
-  host: localhost:3306
-  user: tigerwolfc
-  pwd: 654321
-  dbname: tablename
+  host: 192.168.80.130:3306
+  user: root
+  pwd: root
+  dbname: blog
 web:
   port: 8080
 webpage:
@@ -12,5 +12,5 @@ log:
   log-file: true
   stdout: 'DEBUG'
   file: 'DEBUG'
-  logfilepath: './log'
+  logfilepath: '../log'
   modulename: 'test-log'

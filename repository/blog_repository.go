@@ -122,7 +122,7 @@ func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
 
 func (s *BlogRepository) FindBlogById(blogId int64) (*model.Blog, error) {
 	blog := &model.Blog{}
-	return blog, s.mysqlDb.Preload("Tags").Preload("Comments").First(blog, blogId).Error
+	return blog, s.mysqlDb.Preload("User").Preload("Type").Preload("Tags").Preload("Comments").First(blog, blogId).Error
 }
 
 func (s *BlogRepository) FindAll(page *Page) ([]model.Blog, error) {
@@ -134,7 +134,7 @@ func (s *BlogRepository) FindAll(page *Page) ([]model.Blog, error) {
 
 	var res []model.Blog
 
-	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Order("create_time DESC").Find(&res).Error
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("User").Preload("Type").Preload("Comments").Preload("Tags").Order("create_time DESC").Find(&res).Error
 
 	return res, err
 }
@@ -148,7 +148,7 @@ func (s *BlogRepository) FindRecommendTop(page *Page) ([]model.Blog, error) {
 
 	var res []model.Blog
 
-	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Order("update_time DESC").Where("recommend = 1").Find(&res).Error
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("User").Preload("Type").Preload("Comments").Preload("Tags").Order("update_time DESC").Where("recommend = 1").Find(&res).Error
 
 	return res, err
 }
@@ -162,7 +162,7 @@ func (s *BlogRepository) FindByQuery(query string, page *Page) ([]model.Blog, er
 	query = "%" + query + "%"
 	var res []model.Blog
 
-	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Order("create_time DESC").Where("title like ? or content like ?", query, query).Find(&res).Error
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("User").Preload("Type").Preload("Comments").Preload("Tags").Order("create_time DESC").Where("title like ? or content like ?", query, query).Find(&res).Error
 
 	return res, err
 }

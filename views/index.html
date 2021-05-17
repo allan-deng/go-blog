@@ -1,38 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="_fragments :: head(首页)">
-    <meta charset="UTF-8">
-    <!--    移动端缩放设置-->
-    <meta name="viewport" content="width=device-width , initial-scale=1.0">
-    <title>首页</title>
-    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../static/css/me.css">
-</head>
+
+{{template "header" .pagetitle}}
 <body>
 <!--导航-->
-<nav class="ui inverted attached segment m-padded-tb-mini  m-shadow-small" th:replace="_fragments :: menu(1)">
-    <div class="ui container ">
-        <div class="ui inverted secondary stackable menu">
-            <h2 class="ui blue theader item">Blog</h2>
-            <a href="#" class="active m-item item m-mobile-hide m-magin-top-tiny"><i class="home icon"></i>首页</a>
-            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="idea icon"></i>分类</a>
-            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="tags icon"></i>标签</a>
-            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="clipboard icon"></i>归档</a>
-            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="info icon"></i>关于我</a>
-            <div class="m-item right item  m-mobile-hide m-magin-top-tiny">
-                <div class="ui icon inverted transparent input">
-                    <label>
-                        <input type="text" placeholder="搜索">
-                    </label>
-                    <i class="search link icon"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <a href="#" class="m-menu ui black icon button m-right-top m-mobile-show">
-        <i class="sidebar icon"></i>
-    </a>
-</nav>
+{{template "menu" .active}}
+
 
 <!--    中间部分：左侧文章列表 ，右侧卡片-->
 <div class="m-padded-tb-big m-container-large">
@@ -49,7 +22,7 @@
                         </div>
                         <div class="right aligned column ">
                             共
-                            <div class="ui brown header m-inline-block m-text-thin" th:text="${page.totalElements}">13</div>
+                            <div class="ui brown header m-inline-block m-text-thin" >{{.page.Count}}</div>
                             篇
                         </div>
                     </div>
@@ -57,211 +30,48 @@
                 <!-- 列表-->
                 <div class="ui attached segment m-shadow-small animated fadeIn">
                     <!--文章详情-->
-                    <div th:each="blog : ${page.content}" class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
-
+                    {{range .blogs}}
+                    <div class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
                         <div class="ui middle aligned mobile reversed stackable grid m-magin-lr-small">
                             <div class="eleven wide column">
-                                <h2 class="ui header m-magin-bottom-mini"><a href="#" th:href="@{blog/{id}(id=${blog.id})}" target="_blank" th:text="${blog.title}" class="m-black m-text-header">博客文章标题</a></h2>
-                                <p th:href="@{blog/{id}(id=${blog.id})}" target="_blank" class="m-text" th:text="|${blog.description}......|">博客，仅音译，英文名为Blogger，为WebLog的混成词。它的正式名称为网络日记；又音译为部落格或部落阁等，是使用特定的软件，在网络上出版...</p>
+                                <h2 class="ui header m-magin-bottom-mini"><a href="/blog/{{.ID}}"  target="_blank" class="m-black m-text-header">{{.Title}}</a></h2>
+                                <p href="/blog/{{.ID}}" target="_blank" class="m-text" >{{.Description}}...</p>
                                 <!--底部栏-->
                                 <div class="ui middle aligned stackable  grid ">
                                     <div class="eleven wide column ">
                                         <div class="ui small middle aligned horizontal link list ">
                                             <div class="item">
                                                 <!--头像-->
-                                                <img src="../static/image/02.jpg" th:src="@{${blog.user.avatar}}" alt="" class="ui avatar image">
-                                                <div class="content middle aligned" ><a href="#" class="header" th:text="${blog.user.nickname}">Allan</a></div>
+                                                <img src="{{.User.Avatar}}" alt="" class="ui avatar image">
+                                                <div class="content middle aligned" ><a href="#" class="header" >{{.User.Nickname}}</a></div>
                                             </div>
                                             <div class="item middle aligned">
-                                                <i class=" calendar icon"></i><span th:text="''+${#dates.format(blog.createTime , 'yyyy-MM-dd')}" class="middle aligned">2020-01-01</span>
+                                                <i class=" calendar icon"></i><span class="middle aligned">{{.CreateTime.Format "2006-01-02"}}</span>
                                             </div>
                                             <div class="item middle aligned">
-                                                <i class=" eye icon"></i><span th:text="''+${blog.views}" class="middle aligned">6666</span>
+                                                <i class=" eye icon"></i><span class="middle aligned">{{.Views}}</span>
                                             </div>
                                             <div class="item middle aligned">
                                                 <i class=" comment alternate outline icon"></i>
-                                                <span th:text="''+${#arrays.length(blog.comments)}" class="middle aligned">12</span>
+                                                <span class="middle aligned">{{len .Comments}}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <!--                                        文章标签-->
+                                    <!--文章标签-->
                                     <div class="right aligned five wide column">
-                                        <a href="#" class="ui blue label m-padded-mini " th:text="${blog.type.name}">认知升级</a>
-
+                                        <a href="/type/{{.Type.ID}}" class="ui blue label m-padded-mini " >{{.Type.Name}}</a>
                                     </div>
                                 </div>
                             </div>
                             <div class="five wide column">
                                 <a href="#" target="_blank">
-                                    <img src="https://picsum.photos/id/100/800/450" th:href="@{blog/{id}(id=${blog.id})}" target="_blank" th:src="@{${blog.firstPicture}}" alt="" class="ui   image">
+                                    <img href="/blog/{{.ID}}" target="_blank" src="{{.FirstPicture}}" alt="" class="ui image">
                                 </a>
                             </div>
                         </div>
 
                     </div>
-
-                    <!--/*-->
-                    <div class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
-
-                        <div class="ui mobile reversed stackable grid">
-                            <div class="eleven wide column">
-                                <h2 class="ui header">博客文章标题</h2>
-                                <p class="m-text">博客，仅音译，英文名为Blogger，为Web
-                                    Log的混成词。它的正式名称为网络日记；又音译为部落格或部落阁等，是使用特定的软件，在网络上出版...</p>
-                                <!--                                    底部栏-->
-                                <div class="ui middle aligned stackable  grid ">
-                                    <div class="eleven wide column ">
-                                        <div class="ui small middle aligned horizontal link list ">
-                                            <div class="item">
-                                                <!--                                                    头像-->
-                                                <img src="../static/image/02.jpg" th:src="@{/image/02.jpg}" alt="" class="ui avatar image">
-                                                <div class="content"><a href="#" class="header">Allan</a></div>
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="calendar icon"></i>2020-01-01
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="eye icon"></i>6666
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--                                        文章标签-->
-                                    <div class="right aligned five wide column">
-                                        <a href="#" class="ui blue label m-padded-mini ">认知升级</a>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="five wide column">
-                                <a href="#" target="_blank">
-                                    <img src="https://picsum.photos/id/100/800/400" alt="" class="ui   image">
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
-
-                        <div class="ui mobile reversed stackable grid">
-                            <div class="eleven wide column">
-                                <h2 class="ui header">博客文章标题</h2>
-                                <p class="m-text">博客，仅音译，英文名为Blogger，为Web
-                                    Log的混成词。它的正式名称为网络日记；又音译为部落格或部落阁等，是使用特定的软件，在网络上出版...</p>
-                                <!--                                    底部栏-->
-                                <div class="ui middle aligned stackable  grid ">
-                                    <div class="eleven wide column ">
-                                        <div class="ui small middle aligned horizontal link list ">
-                                            <div class="item">
-                                                <!--                                                    头像-->
-                                                <img src="../static/image/02.jpg" alt="" class="ui avatar image">
-                                                <div class="content"><a href="#" class="header">Allan</a></div>
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="calendar icon"></i>2020-01-01
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="eye icon"></i>6666
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--                                        文章标签-->
-                                    <div class="right aligned five wide column">
-                                        <a href="#" class="ui blue label m-padded-mini ">认知升级</a>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="five wide column">
-                                <a href="#" target="_blank">
-                                    <img src="https://picsum.photos/id/100/800/400" alt="" class="ui   image">
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
-
-                        <div class="ui mobile reversed stackable grid">
-                            <div class="eleven wide column">
-                                <h2 class="ui header">博客文章标题</h2>
-                                <p class="m-text">博客，仅音译，英文名为Blogger，为Web
-                                    Log的混成词。它的正式名称为网络日记；又音译为部落格或部落阁等，是使用特定的软件，在网络上出版...</p>
-                                <!--                                    底部栏-->
-                                <div class="ui middle aligned stackable  grid ">
-                                    <div class="eleven wide column ">
-                                        <div class="ui small middle aligned horizontal link list ">
-                                            <div class="item">
-                                                <!--                                                    头像-->
-                                                <img src="../static/image/02.jpg" alt="" class="ui avatar image">
-                                                <div class="content"><a href="#" class="header">Allan</a></div>
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="calendar icon"></i>2020-01-01
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="eye icon"></i>6666
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--                                        文章标签-->
-                                    <div class="right aligned five wide column">
-                                        <a href="#" class="ui blue label m-padded-mini ">认知升级</a>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="five wide column">
-                                <a href="#" target="_blank">
-                                    <img src="https://picsum.photos/id/100/800/400" alt="" class="ui   image">
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="ui padded vertical segment m-padded-tb-large m-mobile-lr-clear">
-
-                        <div class="ui mobile reversed stackable grid">
-                            <div class="eleven wide column">
-                                <h2 class="ui header">博客文章标题</h2>
-                                <p class="m-text">博客，仅音译，英文名为Blogger，为Web
-                                    Log的混成词。它的正式名称为网络日记；又音译为部落格或部落阁等，是使用特定的软件，在网络上出版...</p>
-                                <!--                                    底部栏-->
-                                <div class="ui middle aligned stackable  grid ">
-                                    <div class="eleven wide column ">
-                                        <div class="ui small middle aligned horizontal link list ">
-                                            <div class="item">
-                                                <!--                                                    头像-->
-                                                <img src="../static/image/02.jpg" alt="" class="ui avatar image">
-                                                <div class="content"><a href="#" class="header">Allan</a></div>
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="calendar icon"></i>2020-01-01
-                                            </div>
-                                            <div class="item middle aligned">
-                                                <i class="eye icon"></i>6666
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--                                        文章标签-->
-                                    <div class="right aligned five wide column">
-                                        <a href="#" class="ui blue label m-padded-mini ">认知升级</a>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="five wide column">
-                                <a href="#" target="_blank">
-                                    <img src="https://picsum.photos/id/100/800/400" alt="" class="ui   image">
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
-                    <!--*/-->
-
+                    {{end}}
                 </div>
                 <!-- 底部-->
                 <div class="ui attached segment m-shadow-small">
@@ -345,27 +155,19 @@
                                 <i class="idea icon"></i>分类
                             </div>
                             <div class="right aligned column">
-                                <a href="#" target="_blank" th:href="@{/types/-1}">more <i class="angle double right icon"></i></a>
+                                <a href="/types/-1">more <i class="angle double right icon"></i></a>
                             </div>
                         </div>
                     </div>
                     <div class="ui segment">
                         <div class="ui fluid vertical menu">
-                            <a href="#" class="item"  th:each="type : ${types}" th:href="@{/types/{id}(id=${type.id})}">
-                                <span th:text="${type.name}">学习日志</span>
-                                <div class="ui blue basic label" th:text="${#arrays.length(type.blogs)}">12</div>
+                            {{range .types}}
+                            <a class="item"  href="/types/{{.ID}}">
+                                <span >{{.Name}}</span>
+                                <div class="ui blue basic label" >{{len .Blogs}}</div>
                             </a>
-
-                            <!--/*-->
-                            <a href="#" class="item">
-                                SpringBoot
-                                <div class="ui blue basic label">6</div>
-                            </a>
-                            <a href="#" class="item">
-                                JVM
-                                <div class="ui blue basic label">3</div>
-                            </a>
-                            <!--*/-->
+                            {{end}}
+                            
                         </div>
                     </div>
 
@@ -379,49 +181,19 @@
                                 <i class="tags icon"></i>标签
                             </div>
                             <div class="right aligned column">
-                                <a href="#" target="_blank" th:href="@{/tags/-1}">more <i class="angle double right icon"></i></a>
+                                <a target="_blank" href="/tags/-1">more <i class="angle double right icon"></i></a>
                             </div>
                         </div>
                     </div>
                     <div class="ui segment" >
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny" th:each="tag : ${tags}" th:href="@{/tags/{id}(id=${tag.id})}">
-                            <span th:text="${tag.name}">方法论</span>
-                            <div class="detail" th:text="${#arrays.length(tag.blogs)}">12</div>
-                        </a>
-                        <!--/*-->
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            SpringBoot
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            机械
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            自动化
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            算法
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            Java
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            读书
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            笔记
-                            <div class="detail">12</div>
-                        </a>
-                        <a href="#" class="ui blue basic label m-magin-tb-tiny">
-                            笔记
-                            <div class="detail">12</div>
-                        </a>
-                        <!--*/-->
+                        {{range .tags}}
+                            <a class="ui blue basic label m-magin-tb-tiny" href="/tags/{{.ID}}">
+                                <span>{{.Name}}</span>
+                                <div class="detail">{{len .Blogs}}</div>
+                            </a>
+                        {{end}}
+                        
+                       
                     </div>
 
                 </div>
@@ -438,17 +210,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="ui segment m-black" th:each="blog : ${recommendBlogs}">
-                        <a href="#" th:href="@{blog/{id}(id=${blog.id})}" target="_blank" class="m-black" th:text="${blog.title}">用户故事</a>
-                    </div>
-                    <!--/*-->
-                    <div class="ui segment m-black">
-                        <a href="#" target="_blank" class="m-black">学习的重要性</a>
-                    </div>
-                    <div class="ui segment m-black">
-                        <a href="#" target="_blank" class="m-black">项目笔记</a>
-                    </div>
-                    <!--*/-->
+                    {{range .recommands}}
+                        <div class="ui segment m-black" >
+                            <a href="blog/{{.ID}}" target="_blank" class="m-black" >{{.Title}}</a>
+                        </div>
+                    {{end}}
+                 
              </div>
 
             </div>
@@ -457,52 +224,8 @@
 </div>
 
 <!--    footer-->
-<footer th:replace="_fragments :: footer" class="ui inverted vertical segment m-padded-tb-massive m-shadow-small">
-    <div class="ui center aligned container">
-        <!--            与BootStrap不同 水平空间划分为16份-->
-        <div class="ui inverted divided stackable grid">
-            <div class="three wide column">
-                <div class="ui inverted link list">
-                    <div class="item">
-                        <img src="../static/image/01.jpg" th:src="@{/image/01.jpg}" class="ui rounded image" alt="" style="width: 100px">
-                    </div>
-                </div>
-            </div>
-            <div class="three wide column">
-                <h4 class="ui inverted header m-text-spaced">最新博客</h4>
-                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
-                    <a href="#" class="item m-white">用户故事</a>
-                    <a href="#" class="item m-white">用户故事</a>
-                    <a href="#" class="item m-white">用户故事</a>
-                    <a href="#" class="item m-white">用户故事</a>
-                </div>
-            </div>
-            <div class="four wide column">
-                <h4 class="ui inverted header m-text-spaced">联系我</h4>
-                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
-                    <a href="#" class="item m-white">Email：allandeng97@foxmail.com</a>
-                    <a href="#" class="item m-white">Github：allandengcn</a>
-                </div>
-            </div>
-            <div class="six wide column">
-                <h4 class="ui inverted header m-text-spaced">AllanDeng</h4>
-                <p class="m-text-thin m-text-spaced m-opacity-mini  m-white">这是我的个人博客。这是我的个人博客。这是我的个人博客。这是我的个人博客。</p>
-            </div>
-        </div>
-    </div>
-    <div class="ui inverted section divider"></div>
-    <div class="ui center aligned container m-text-thin m-text-spaced m-opacity-mini">
-        Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .
-        <br>
-        <a href="http://www.miitbeian.gov.cn/" class="item  m-white">鄂ICP备 19011531号</a>
-    </div>
-</footer>
-
-<!--下面这种注释格式在html中为注释，不会影响静态页面；在thymeleaf中不是注释，可正确执行-->
-<!--/*/<th:block th:replace="_fragments :: script">/*/-->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.js"></script>
-<!--/*/</th:block>/*/-->
+{{template "footer"}}
+{{template "script"}}
 
 <!--顶部导航栏菜单按钮的显示与隐藏-->
 <script>

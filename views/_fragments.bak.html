@@ -3,12 +3,11 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <!--头部,传入参数 标题-->
-{{define "header"}}
-<head >
+<head th:fragment="head(title)">
     <meta charset="UTF-8">
     <!--移动端缩放设置-->
     <meta name="viewport" content="width=device-width , initial-scale=1.0">
-    <title >{{.}}-Allan的个人博客</title>
+    <title th:text="${title} + '-' + #{nav.title}">详情页</title>
     <!--semantic-UI-->
     <link rel="stylesheet" href="../static/lib/semantic/semantic.min.css" th:href="@{/lib/semantic/semantic.min.css}">
     <!--自定义样式-->
@@ -21,44 +20,21 @@
     <link rel="stylesheet" href="../static/lib/prism/prism.css" th:href="@{/lib/prism/prism.css}">
     <!--tocbot目录生成-->
     <link rel="stylesheet" href="../static/lib/tocbot/tocbot.css" th:href="@{/lib/tocbot/tocbot.css}">
-    <!--icon-->
-    <link rel="shortcut icon" href="../static/favicon.ico">
 </head>
-{{end}}
+
 
 <body>
 
 <!-- 导航，传入参数active的选项-->
-{{define "menu"}}
-<nav class="ui inverted attached segment m-padded-tb-mini  m-shadow-small">
+<nav th:fragment="menu(n)" class="ui inverted attached segment m-padded-tb-mini  m-shadow-small">
     <div class="ui container ">
         <div class="ui inverted secondary stackable menu">
-            <h2 class="ui blue theader item" >Allan的个人博客</h2>
-            <a href="/"  
-                {{if eq . 1}} class ="m-item item m-mobile-hide m-magin-top-tiny active" 
-                {{else}} class ="m-item item m-mobile-hide m-magin-top-tiny" 
-                {{end}}
-            ><i class="home icon"></i>首页</a>
-            <a href="/types/-1" 
-                {{if eq . 2}} class ="m-item item m-mobile-hide m-magin-top-tiny active" 
-                {{else}} class ="m-item item m-mobile-hide m-magin-top-tiny" 
-                {{end}}
-            ><i class="idea icon"></i>分类</a>
-                <a href="/tags/-1" 
-                {{if eq . 3}} class ="m-item item m-mobile-hide m-magin-top-tiny active" 
-                {{else}} class ="m-item item m-mobile-hide m-magin-top-tiny" 
-                {{end}}
-            ><i class="tags icon"></i>标签</a>
-                <a href="/archives" 
-                {{if eq . 4}} class ="m-item item m-mobile-hide m-magin-top-tiny active" 
-                {{else}} class ="m-item item m-mobile-hide m-magin-top-tiny" 
-                {{end}}
-            ><i class="clipboard icon"></i>归档</a>
-                <a href="/about" 
-                {{if eq . 5}} class ="m-item item m-mobile-hide m-magin-top-tiny active" 
-                {{else}} class ="m-item item m-mobile-hide m-magin-top-tiny" 
-                {{end}}
-            ><i class="info icon"></i>关于我</a>
+            <h2 class="ui blue theader item" th:text="#{nav.title}">Blog</h2>
+            <a href="#" th:href="@{/}" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==1} ? 'active' "><i class="home icon"></i>首页</a>
+            <a href="#" th:href="@{/types/-1}" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==2} ? 'active' "><i class="idea icon"></i>分类</a>
+            <a href="#" th:href="@{/tags/-1}" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==3} ? 'active' "><i class="tags icon"></i>标签</a>
+            <a href="#" th:href="@{/archives}" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==4} ? 'active' "><i class="clipboard icon"></i>归档</a>
+            <a href="#" th:href="@{/about}" class="m-item item m-mobile-hide m-magin-top-tiny" th:classappend="${n==5} ? 'active' "><i class="info icon"></i>关于我</a>
             <div class="m-item right item  m-mobile-hide m-magin-top-tiny">
                 <form name="search" action="#" th:action="@{/search}" target="_blank" method="post">
                     <div class="ui icon inverted transparent input">
@@ -73,11 +49,9 @@
         <i class="sidebar icon"></i>
     </a>
 </nav>
-{{end}}
 
-{{define "footer"}}
 <!-- footer-->
-<footer class="ui inverted vertical segment m-padded-tb-big">
+<footer th:fragment="footer" class="ui inverted vertical segment m-padded-tb-big">
     <div class="ui center aligned container">
         <!--            与BootStrap不同 水平空间划分为16份-->
         <div class="ui inverted divided stackable grid">
@@ -85,7 +59,7 @@
                 <h4 class="ui inverted header m-text-spaced">最新博客</h4>
                 <div id="newblog-container">
                     <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini" th:fragment="newblogList">
-                        <a href="@{/blog/{id}(id = ${blog.id})}" class="item m-white" th:each="blog : ${newblogs}" th:text="${blog.title}">用户故事</a>
+                        <a href="#" th:href="@{/blog/{id}(id = ${blog.id})}" class="item m-white" th:each="blog : ${newblogs}" th:text="${blog.title}">用户故事</a>
                         <!--/*-->
                         <a href="#" class="item m-white">用户故事</a>
                         <a href="#" class="item m-white">用户故事</a>
@@ -116,27 +90,28 @@
         <div class="item  m-white" th:text="#{index.num}">鄂ICP备 19011531号</div>
     </div>
 </footer>
-{{end}}
 
-{{define "script"}}
 <!--js-->
-<!--jquery-->
-<script src="../static/js/jquery.min.js"></script>
-<!--semantic UI-->
-<script src="../static/lib/semantic/semantic.min.js"></script>
-<!--prism语法高亮-->
-<script src="../static/lib/prism/prism.js"></script>
-<!--tocbot目录生成-->
-<script src="../static/lib/tocbot/tocbot.js"></script>
-<!--qrcode二维码-->
-<script src="../static/lib/qrcode/qrcode.js"></script>
-<!--scrollTo平滑滚动-->
-<script src="../static/lib/scrollTo/jquery.scrollTo.min.js"></script>
-<!--footer自动切换-->
-<script>
-    $('#newblog-container').load(/*[[@{/footer/newblog}]]*/"/footer/newblog");
-</script>
-{{end}}
+<th:block th:fragment="script">
+    <!--jquery-->
+    <script src="../static/js/jquery.min.js" th:src="@{/js/jquery.min.js}"></script>
+    <!--semantic UI-->
+    <script src="../static/lib/semantic/semantic.min.js" th:src="@{/lib/semantic/semantic.min.js}"></script>
+    <!--prism语法高亮-->
+    <script src="../static/lib/prism/prism.js" th:src="@{/lib/prism/prism.js}"></script>
+    <!--tocbot目录生成-->
+    <script src="../static/lib/tocbot/tocbot.js" th:src="@{/lib/tocbot/tocbot.js}"></script>
+    <!--qrcode二维码-->
+    <script src="../static/lib/qrcode/qrcode.js" th:src="@{/lib/qrcode/qrcode.js}"></script>
+    <!--scrollTo平滑滚动-->
+    <script src="../static/lib/scrollTo/jquery.scrollTo.min.js" th:src="@{/lib/scrollTo/jquery.scrollTo.min.js}"></script>
+    <!--footer自动切换-->
+    <script>
+        $('#newblog-container').load(/*[[@{/footer/newblog}]]*/"/footer/newblog");
+    </script>
+
+</th:block>
+
 
 </body>
 </html>

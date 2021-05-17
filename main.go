@@ -11,7 +11,10 @@ import (
 	"text/template"
 	"time"
 
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+
 	"allandeng.cn/allandeng/go-blog/config"
+	dao "allandeng.cn/allandeng/go-blog/repository"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/op/go-logging"
@@ -19,9 +22,7 @@ import (
 
 var log *logging.Logger
 
-func initConfig() {
-	config.LoadConfig("./config/config.yaml")
-	config.InitLogger()
+func init() {
 	log = config.Logger
 }
 
@@ -133,33 +134,52 @@ func HandleIterceptor(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
-	initConfig()
+	//创建并注册路由
 	muxRouter := mux.NewRouter()
-
 	RegisterRouter(muxRouter)
+	//连接到数据库并初始化
+	dbConf := config.GlobalConfig.Mysql
+	db, err := GetDbConnect(dbConf.User, dbConf.Pwd, dbConf.Host, dbConf.Dbname)
+	if err != nil {
+		log.Panicf("Error : can't connent to database ; %s", err)
+	}
+	InitDaoAndTable(db)
+
 	//路由
 	// http.HandleFunc("/", sayhelloName)              // 设置访问的路由
 	// mux := &MyMux{}
 	// err := http.ListenAndServe("0.0.0.0:9090", mux) // 设置监听的端口
-	err := http.ListenAndServe("0.0.0.0:9090", muxRouter) // 设置监听的端口
+	err = http.ListenAndServe("0.0.0.0:9090", muxRouter) // 设置监听的端口
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		log.Panicf("Panic create server failed : ", err)
 	}
 
 }
 
-//TODO: 连接数据库的函数
-func GetDbConnect(user string, password string, ip string, port int, dbname string) *gorm.DB {
-
-	db, err := gorm.Open("mysql", "root:root@tcp(127.0.0.1:3306)/blog?charset=utf8&parseTime=True")
+//连接数据库的函数
+func GetDbConnect(user string, password string, host string, dbname string) (*gorm.DB, error) {
+	dbString := user + ":" + password + "@tcp(" + host + ")/" + dbname + "?charset=utf8&parseTime=True"
+	log.Debugf("Connect database string : %s", dbString)
+	db, err := gorm.Open("mysql", dbString)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 	db.SingularTable(true)
-	return db
+	return db, nil
 }
 
-//TODO: 初始化表的函数
-func InitAllTable() {
+//初始化repository和对应的表
+func InitDaoAndTable(db *gorm.DB) {
+	//TODO: 此处写法不优雅，后续再细究
+	dao.InitBlogRepository(db)
+	dao.InitCommentRepository(db)
+	dao.InitTagRepository(db)
+	dao.InitTypeRepository(db)
+	dao.InitUserRepository(db)
 
+	dao.GetBlogRepository().InitTable()
+	dao.GetCommentRepository().InitTable()
+	dao.GetTagRepository().InitTable()
+	dao.GetTypeRepository().InitTable()
+	dao.GetUserRepository().InitTable()
 }
