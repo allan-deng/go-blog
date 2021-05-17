@@ -26,9 +26,23 @@ type UserRepository struct {
 	mysqlDb *gorm.DB
 }
 
-//创建userRepository
-func NewUserRepository(db *gorm.DB) IUserRepository {
+//创建UserRepository
+func newUserRepository(db *gorm.DB) IUserRepository {
 	return &UserRepository{mysqlDb: db}
+}
+
+/*
+这里使用单例模式，但是把dao层的init和get分开，调用之前人为显式的完成初始化
+*/
+var userRepositoryIns IUserRepository
+
+func InitUserRepository(db *gorm.DB) error {
+	userRepositoryIns = newUserRepository(db)
+	return nil
+}
+
+func GetUserRepository() IUserRepository {
+	return userRepositoryIns
 }
 
 func (s *UserRepository) InitTable() error {

@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"allandeng.cn/allandeng/go-blog/config"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"github.com/op/go-logging"
 )
 
@@ -88,13 +90,22 @@ func upload(w http.ResponseWriter, r *http.Request) {
 }
 
 type MyMux struct {
+	// handlerMap map[string]func(http.ResponseWriter, http.Request)
 }
 
-func (p *MyMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// func (s *MyMux) InitMux() {
+// 	s.handlerMap = make(map[string]func(http.ResponseWriter, http.Request))
+// }
+
+// func (s *MyMux) AddRouter(path string, handler func(http.ResponseWriter, http.Request)) {
+// 	s.handlerMap[path] = handler
+// }
+
+func (s *MyMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/":
 		sayhelloName(w, r)
-	case "/login":
+	case "/login/":
 		login(w, r)
 	case "/upload":
 		upload(w, r)
@@ -123,15 +134,32 @@ func HandleIterceptor(h http.HandlerFunc) http.HandlerFunc {
 
 func main() {
 	initConfig()
-	log.Debug("666")
+	muxRouter := mux.NewRouter()
+
+	RegisterRouter(muxRouter)
 	//路由
 	// http.HandleFunc("/", sayhelloName)              // 设置访问的路由
-	mux := &MyMux{}
-	err := http.ListenAndServe("0.0.0.0:9090", mux) // 设置监听的端口
+	// mux := &MyMux{}
+	// err := http.ListenAndServe("0.0.0.0:9090", mux) // 设置监听的端口
+	err := http.ListenAndServe("0.0.0.0:9090", muxRouter) // 设置监听的端口
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 
 }
 
-//TODO: 到了数据存储，考虑是mangodb还是es
+//TODO: 连接数据库的函数
+func GetDbConnect(user string, password string, ip string, port int, dbname string) *gorm.DB {
+
+	db, err := gorm.Open("mysql", "root:root@tcp(127.0.0.1:3306)/blog?charset=utf8&parseTime=True")
+	if err != nil {
+		log.Error(err)
+	}
+	db.SingularTable(true)
+	return db
+}
+
+//TODO: 初始化表的函数
+func InitAllTable() {
+
+}

@@ -15,7 +15,8 @@ func getTagRepository() ITagRepository {
 		log.Println(err)
 	}
 	db.SingularTable(true)
-	return NewTagRepository(db)
+	InitTagRepository(db)
+	return GetTagRepository()
 }
 
 func TestTagRepository_CreateTag(t *testing.T) {

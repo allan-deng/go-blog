@@ -31,9 +31,23 @@ type TypeRepository struct {
 	mysqlDb *gorm.DB
 }
 
-//创建typeRepository
-func NewTypeRepository(db *gorm.DB) ITypeRepository {
+//创建TypeRepository
+func newTypeRepository(db *gorm.DB) ITypeRepository {
 	return &TypeRepository{mysqlDb: db}
+}
+
+/*
+这里使用单例模式，但是把dao层的init和get分开，调用之前人为显式的完成初始化
+*/
+var typeRepositoryIns ITypeRepository
+
+func InitTypeRepository(db *gorm.DB) error {
+	typeRepositoryIns = newTypeRepository(db)
+	return nil
+}
+
+func GetTypeRepository() ITypeRepository {
+	return typeRepositoryIns
 }
 
 func (s *TypeRepository) InitTable() error {

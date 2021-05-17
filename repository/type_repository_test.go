@@ -15,7 +15,8 @@ func getRepository() ITypeRepository {
 		log.Println(err)
 	}
 	db.SingularTable(true)
-	return NewTypeRepository(db)
+	InitTypeRepository(db)
+	return GetTypeRepository()
 }
 
 func TestTypeRepository_CreateType(t *testing.T) {

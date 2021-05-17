@@ -44,8 +44,22 @@ type BlogRepository struct {
 }
 
 //创建blogRepository
-func NewBlogRepository(db *gorm.DB) IBlogRepository {
+func newBlogRepository(db *gorm.DB) IBlogRepository {
 	return &BlogRepository{mysqlDb: db}
+}
+
+/*
+这里使用单例模式，但是把dao层的init和get分开，调用之前人为显式的完成初始化
+*/
+var blogRepositoryIns IBlogRepository
+
+func InitBlogRepository(db *gorm.DB) error {
+	blogRepositoryIns = newBlogRepository(db)
+	return nil
+}
+
+func GetBlogRepository() IBlogRepository {
+	return blogRepositoryIns
 }
 
 func (s *BlogRepository) InitTable() error {
@@ -54,25 +68,28 @@ func (s *BlogRepository) InitTable() error {
 
 func (s *BlogRepository) CreateBlog(blog *model.Blog) (int64, error) {
 	err := s.mysqlDb.Create(blog).Error
-	tags := blog.Tags
-	for _, tag := range tags {
-		if len(tag.Name) != 0 {
-			//tag的名称不为空时，创建连结
-			tag := &model.Tag{}
-			if s.mysqlDb.Where("name = ?", tag.Name).First(tag).RecordNotFound() {
-				//如果不存在则插入
-				err := s.mysqlDb.Create(tag).Error
-				return 0, err
-			}
-			s.mysqlDb.Raw("INSERT INTO blog_tag ( blog_id , tag_id ) VALUES ( ?, ? )", blog.ID, tag.ID)
-		}
-	}
+	//多对多的连接由gorm完成不需要自行添加连接
+	// tags := blog.Tags
+	// for _, tag := range tags {
+	// 	if len(tag.Name) != 0 {
+	// 		//tag的名称不为空时，创建连结
+	// 		tag := &model.Tag{
+	// 			Name: tag.Name,
+	// 		}
+	// 		if s.mysqlDb.Debug().Where("name = ?", tag.Name).First(tag).RecordNotFound() {
+	// 			//如果不存在则插入
+	// 			err := s.mysqlDb.Debug().Create(tag).Error
+	// 			return 0, err
+	// 		}
+	// 		s.mysqlDb.Debug().Raw("INSERT INTO blog_tag ( blog_id , tag_id ) VALUES ( ?, ? )", blog.ID, tag.ID)
+	// 	}
+	// }
 	return blog.ID, err
 }
 
 func (s *BlogRepository) DeleteBlog(blogId int64) error {
 	// 先删除连结表
-	err := s.mysqlDb.Raw("delete from blog_tag where blog_id = ?", blogId).Error
+	err := s.mysqlDb.Debug().Exec("delete from blog_tag where blog_id = ?", blogId).Error
 	if err != nil {
 		return err
 	}
@@ -83,28 +100,29 @@ func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
 	if blog.ID <= 0 {
 		return errors.New("error: cannot update type without id")
 	}
-	tags := blog.Tags
-	for _, tag := range tags {
-		if len(tag.Name) != 0 {
-			//tag的名称不为空时，创建连结
-			tag := &model.Tag{}
-			if s.mysqlDb.Where("name = ?", tag.Name).First(tag).RecordNotFound() {
-				//如果不存在则插入
-				err := s.mysqlDb.Create(tag).Error
-				return err
-			}
-			if s.mysqlDb.Raw("select * from blog_tag where blog_id = ? and tag_id = ?", blog.ID, tag.ID).RecordNotFound() {
-				//连结不存在时创建连结
-				s.mysqlDb.Raw("INSERT INTO blog_tag ( blog_id , tag_id ) VALUES ( ?, ? )", blog.ID, tag.ID)
-			}
-		}
-	}
+	// tags := blog.Tags
+	// for _, tag := range tags {
+	// 	if len(tag.Name) != 0 {
+	// 		//tag的名称不为空时，创建连结
+	// 		tag := &model.Tag{}
+	// 		if s.mysqlDb.Where("name = ?", tag.Name).First(tag).RecordNotFound() {
+	// 			//如果不存在则插入
+	// 			err := s.mysqlDb.Create(tag).Error
+	// 			return err
+	// 		}
+	// 		if s.mysqlDb.Raw("select * from blog_tag where blog_id = ? and tag_id = ?", blog.ID, tag.ID).RecordNotFound() {
+	// 			//连结不存在时创建连结
+	// 			s.mysqlDb.Raw("INSERT INTO blog_tag ( blog_id , tag_id ) VALUES ( ?, ? )", blog.ID, tag.ID)
+	// 		}
+	// 	}
+	// }
+	//save操作会自动添加连接
 	return s.mysqlDb.Save(blog).Error
 }
 
 func (s *BlogRepository) FindBlogById(blogId int64) (*model.Blog, error) {
 	blog := &model.Blog{}
-	return blog, s.mysqlDb.Preload("Tags").Preload("Types").First(blog, blogId).Error
+	return blog, s.mysqlDb.Preload("Tags").Preload("Comments").First(blog, blogId).Error
 }
 
 func (s *BlogRepository) FindAll(page *Page) ([]model.Blog, error) {
@@ -116,7 +134,7 @@ func (s *BlogRepository) FindAll(page *Page) ([]model.Blog, error) {
 
 	var res []model.Blog
 
-	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Preload("Types").Omit("conent").Order("create_time DESC").Find(&res).Error
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Order("create_time DESC").Find(&res).Error
 
 	return res, err
 }
@@ -130,7 +148,7 @@ func (s *BlogRepository) FindRecommendTop(page *Page) ([]model.Blog, error) {
 
 	var res []model.Blog
 
-	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Preload("Types").Omit("conent").Order("update_time DESC").Where("recommend = 1").Find(&res).Error
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Order("update_time DESC").Where("recommend = 1").Find(&res).Error
 
 	return res, err
 }
@@ -144,7 +162,7 @@ func (s *BlogRepository) FindByQuery(query string, page *Page) ([]model.Blog, er
 	query = "%" + query + "%"
 	var res []model.Blog
 
-	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Preload("Types").Omit("conent").Order("create_time DESC").Where("title like ? or content like ?", query, query).Find(&res).Error
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("Tags").Order("create_time DESC").Where("title like ? or content like ?", query, query).Find(&res).Error
 
 	return res, err
 }
@@ -173,7 +191,7 @@ func (s *BlogRepository) FindByYear(year string) ([]model.Blog, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var blog model.Blog
-		rows.Scan(&blog)
+		s.mysqlDb.ScanRows(rows, &blog)
 		res = append(res, blog)
 	}
 	return res, err

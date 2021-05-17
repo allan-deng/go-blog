@@ -15,7 +15,8 @@ func getUserRepository() IUserRepository {
 		log.Println(err)
 	}
 	db.SingularTable(true)
-	return NewUserRepository(db)
+	InitUserRepository(db)
+	return GetUserRepository()
 }
 
 func TestUserRepository_CreateUser(t *testing.T) {

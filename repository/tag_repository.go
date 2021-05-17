@@ -30,9 +30,23 @@ type TagRepository struct {
 	mysqlDb *gorm.DB
 }
 
-//创建tagRepository
-func NewTagRepository(db *gorm.DB) ITagRepository {
+//创建blogRepository
+func newTagRepository(db *gorm.DB) ITagRepository {
 	return &TagRepository{mysqlDb: db}
+}
+
+/*
+这里使用单例模式，但是把dao层的init和get分开，调用之前人为显式的完成初始化
+*/
+var tagRepositoryIns ITagRepository
+
+func InitTagRepository(db *gorm.DB) error {
+	tagRepositoryIns = newTagRepository(db)
+	return nil
+}
+
+func GetTagRepository() ITagRepository {
+	return tagRepositoryIns
 }
 
 func (s *TagRepository) InitTable() error {
@@ -63,14 +77,14 @@ func (s *TagRepository) UpdateTag(tag *model.Tag) error {
 
 func (s *TagRepository) FindTagById(tagId int64) (*model.Tag, error) {
 	tag := &model.Tag{}
-	return tag, s.mysqlDb.Preload("Blogs", func(db *gorm.DB) *gorm.DB {
+	return tag, s.mysqlDb.Preload("Tags", func(db *gorm.DB) *gorm.DB {
 		return db.Omit("content")
 	}).First(tag, tagId).Error
 }
 
 func (s *TagRepository) FindTagByName(tagName string) (*model.Tag, error) {
 	tag := &model.Tag{}
-	return tag, s.mysqlDb.Where("name = ?", tagName).Preload("Blogs", func(db *gorm.DB) *gorm.DB {
+	return tag, s.mysqlDb.Where("name = ?", tagName).Preload("Tags", func(db *gorm.DB) *gorm.DB {
 		return db.Omit("content")
 	}).First(tag).Error
 }
@@ -125,7 +139,7 @@ func (s *TagRepository) FindTop(page *Page) ([]model.Tag, error) {
 func (s *TagRepository) FindAll() ([]model.Tag, error) {
 	//TODO:
 	var res []model.Tag
-	return res, s.mysqlDb.Preload("Blogs", func(db *gorm.DB) *gorm.DB {
+	return res, s.mysqlDb.Preload("Tags", func(db *gorm.DB) *gorm.DB {
 		return db.Omit("content")
 	}).Find(&res).Error
 }
