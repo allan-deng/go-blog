@@ -79,7 +79,7 @@
 <!-- footer-->
 <footer class="ui inverted vertical segment m-padded-tb-big">
     <div class="ui center aligned container">
-        <!--            与BootStrap不同 水平空间划分为16份-->
+        <!-- 与BootStrap不同 水平空间划分为16份-->
         <div class="ui inverted divided stackable grid">
             <div class="four wide column"  >
                 <h4 class="ui inverted header m-text-spaced">最新博客</h4>
@@ -98,22 +98,21 @@
             <div class="five wide column">
                 <h4 class="ui inverted header m-text-spaced">联系我</h4>
                 <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
-                    <a href="#" class="item m-white" th:text="'Email: ' + #{index.email}">Email：allandeng97@foxmail.com</a>
-                    <a href="#" class="item m-white" th:href="@{#{index.githubLink}}" th:text="'Github: ' + #{index.githubName}">Github：allandengcn</a>
-
+                    <a href="#" class="item m-white" >Email：{{.massage.Index.Email}}</a>
+                    <a href="{{.massage.Index.Githublink}}" class="item m-white" >Github：{{.massage.Index.Githubname}}</a>
                 </div>
             </div>
             <div class="seven wide column">
-                <h4 class="ui inverted header m-text-spaced" th:text="#{index.footerTitle}">AllanDeng</h4>
-                <p class="m-text-thin m-text-spaced m-opacity-mini  m-white" th:text="#{index.profile}">这是我的个人博客。这是我的个人博客。这是我的个人博客。这是我的个人博客。</p>
+                <h4 class="ui inverted header m-text-spaced">{{.massage.Index.FooterTitle}}</h4>
+                <p class="m-text-thin m-text-spaced m-opacity-mini  m-white">{{.massage.Index.Profile}}</p>
             </div>
         </div>
     </div>
     <div class="ui inverted section divider"></div>
     <div class="ui center aligned container m-text-thin m-text-spaced m-opacity-mini" >
-        <span th:utext="#{index.copyright}">Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .</span>
+        <span>{{.massage.Index.Copyright | htmltext}}</span>
         <br>
-        <div class="item  m-white" th:text="#{index.num}">鄂ICP备 19011531号</div>
+        <div class="item  m-white">{{.massage.Index.Num  | htmltext}}</div>
     </div>
 </footer>
 {{end}}
@@ -134,7 +133,7 @@
 <script src="../static/lib/scrollTo/jquery.scrollTo.min.js"></script>
 <!--footer自动切换-->
 <script>
-    $('#newblog-container').load(/*[[@{/footer/newblog}]]*/"/footer/newblog");
+    $('#newblog-container').load("/footer/newblog");
 </script>
 {{end}}
 

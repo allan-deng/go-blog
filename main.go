@@ -15,6 +15,7 @@ import (
 
 	"allandeng.cn/allandeng/go-blog/config"
 	dao "allandeng.cn/allandeng/go-blog/repository"
+	"allandeng.cn/allandeng/go-blog/router"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/op/go-logging"
@@ -136,7 +137,7 @@ func HandleIterceptor(h http.HandlerFunc) http.HandlerFunc {
 func main() {
 	//创建并注册路由
 	muxRouter := mux.NewRouter()
-	RegisterRouter(muxRouter)
+	router.Register(muxRouter)
 	//连接到数据库并初始化
 	dbConf := config.GlobalConfig.Mysql
 	db, err := GetDbConnect(dbConf.User, dbConf.Pwd, dbConf.Host, dbConf.Dbname)

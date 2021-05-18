@@ -1,4 +1,4 @@
-package main
+package router
 
 import (
 	"bytes"
@@ -7,20 +7,32 @@ import (
 	"net/http"
 	"strconv"
 
+	"allandeng.cn/allandeng/go-blog/config"
 	"allandeng.cn/allandeng/go-blog/handler"
 	"github.com/gorilla/mux"
+	"github.com/op/go-logging"
 )
 
-func RegisterRouter(r *mux.Router) {
+var log *logging.Logger
+
+func init() {
+	log = config.Logger
+}
+
+func Register(r *mux.Router) {
 	//添加日志记录器
 	r.Use(logMidware)
 	//静态文件路由
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
 	r.HandleFunc("/", handler.IndexHandler)
+	//TODO:
+	// r.HandleFunc("/footer/newblog", handler.NewBlogHandler)
 
 	//管理端的router
 	// adminRouter := r.PathPrefix("/admin").Subrouter()
+
+	r.NotFoundHandler = http.HandlerFunc(handler.NotFoundHandler)
 }
 
 //记录请求的相关日志

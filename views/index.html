@@ -74,76 +74,70 @@
                     {{end}}
                 </div>
                 <!-- 底部-->
-                <div class="ui attached segment m-shadow-small">
-                    <div class="ui middle aligned two column grid" th:if="${page.totalPages}>1">
-                        <div class="column ">
-                            <a th:href="@{/(page=${page.number}-1)}" class="ui small blue basic button" th:unless="${page.first}">上一页</a>
+                {{if gt .page.Nums 1}}
+                <div class="ui attached segment m-shadow-small">                  
+                    <div class="ui middle aligned two column grid" >
+                        <div class="column "> 
+                            {{if .page.First}}                
+                            <a href="/?page={{sub .page.Index 1}}" class="ui small blue basic button">上一页</a>     
+                            {{end}}                       
                         </div>
                         <div class="right aligned column ">
-                            <a th:href="@{/(page=${page.number}+1)}" class="ui small blue basic button" th:unless="${page.last}">下一页</a>
+                            {{if .page.Last}}     
+                            <a href="/?page={{add .page.Index 1}}" class="ui small blue basic button">下一页</a>
+                            {{end}} 
                         </div>
-                    </div>
+                    </div>                    
                 </div>
+                {{end}}
             </div>
 
-            <!--            右边：卡片-->
+            <!--右边：卡片-->
             <div class="five wide column">
                 <!--自我介绍-->
                 <div class="m-shadow-small fadeIn " th:with="stacks = #{about.stack} , hobbys = #{about.hobby}">
                     <div class="fadeIn">
                         <div class="ui top attached segment fadeIn center aligned">
                             <a href="/about">
-                                <img src="../static/image/02.jpg" th:src="@{#{about.avatar}}" alt="" class="ui circular image" style="margin: 0 auto;max-width: 60px">
+                                <img src="{{.massage.About.Avatar}}" alt="" class="ui circular image" style="margin: 0 auto;max-width: 60px">
                             </a>
 
-                            <a class="ui header center aligned" href="/about" th:text="#{about.name}" style="margin-top: 0.5em !important;">
-                                关于我
+                            <a class="ui header center aligned" href="/about"  style="margin-top: 0.5em !important;">
+                                {{.massage.About.Name}}
                             </a>
                         </div>
 
                         <!--介绍-->
                         <div class="ui  attached segment">
-                            <p class="m-text" th:text="#{about.paraOne}">这个地方放我的自我介绍,我的自我介绍,这个地方放我的自我介绍,我的自我介绍</p>
-                            <p class="m-text" th:text="#{about.paraTwo}">这个地方放我的自我介绍,我的自我介绍,这个地方放我的自我介绍,我的自我介绍 </p>
+                            <p class="m-text" >{{.massage.About.ParaOne}}</p>
+                            <p class="m-text" >{{.massage.About.ParaTwo}}</p>
                         </div>
 
                         <!--兴趣爱好-->
                         <div class="ui  attached segment">
-                            <div class="ui orange basic label" th:each="hobby : ${#strings.listSplit(hobbys,',')}" th:text="${hobby}">编程</div>
-                            <!--/*-->
-                            <div class="ui orange basic label">阅读</div>
-                            <div class="ui orange basic label">思考</div>
-                            <div class="ui orange basic label">运动</div>
-                            <!--*/-->
+                            {{range .massage.About.Hobby}}
+                            <div class="ui orange basic label" >{{.}}</div>
+                            {{end}}
                         </div>
 
                         <!--技术标签-->
                         <div class="ui  attached segment">
-                            <div class="ui blue basic left pointing label m-magin-tb-samll " th:each="stack : ${#strings.listSplit(stacks,',')}" th:text="${stack}">Java</div>
-                            <!--/*-->
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <div class="ui blue basic left pointing label m-magin-tb-samll">Java</div>
-                            <!--*/-->
+                            {{range .massage.About.Stack}}
+                            <div class="ui blue basic left pointing label m-magin-tb-samll ">{{.}}</div>
+                            {{end}}
                         </div>
 
                         <!--链接-->
                         <div class="ui  bottom attached segment center aligned">
-                            <a href="https://github.com/allandengcn" class="ui circular icon button">
+                            <a href="{{.massage.Index.Githublink}}" class="ui circular icon button">
                                 <i class="github icon"></i>
                             </a>
 
-                            <a href="#" class="ui email circular icon button" data-content="allandeng97@foxmail.com" data-position="bottom center">
+                            <a href="#" class="ui email circular icon button" data-content="{{.massage.Index.Email}}" data-position="bottom center">
                                 <i class="envelope outline icon"></i>
                             </a>
                         </div>
-
                     </div>
-
                 </div>
 
 
@@ -224,7 +218,7 @@
 </div>
 
 <!--    footer-->
-{{template "footer"}}
+{{template "footer" .}}
 {{template "script"}}
 
 <!--顶部导航栏菜单按钮的显示与隐藏-->

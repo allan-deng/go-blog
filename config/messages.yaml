@@ -1,0 +1,42 @@
+nav:
+  #导航栏显示的标题
+  title: 'Allan的个人博客'
+index:
+  # footer中显示的email
+  email: 'allandeng97@foxmail.com'
+  # footer中显示的github名称
+  githubName: 'allandengcn'
+  # footer中显示的github连接
+  githubLink: 'https://github.com/allandengcn'
+  # Copyright
+  copyright: 'Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .'
+  # 备案号
+  num: '<a href="https://beian.miit.gov.cn" class="item m-white">鄂ICP备 19011531号-1</a>'
+  # footer中右侧小标题
+  footerTitle: 'Allan的个人博客'
+  # footer中自我介绍
+  profile: '爱编程，爱折腾。这是我的个人博客，在这里分享我的学习、生活、感悟。期待一起交流学习经验，期待一同分享生活的惊喜。'
+blog:
+  #版权声明
+  copyright: '<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="知识共享许可协议" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/80x15.png" /></a>本作品采用<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC-BY-NC-SA 4.0 协议</a>进行许可。'
+  # 默认首图的位置
+  defaultPath:
+  # 微信收款码
+  wechat: '/static/image/wechat.png'
+  # 支付宝收款码
+  alipay: '/static/image/alipay.jpg'
+about:
+  # 自我介绍中名称
+  name: 'Allan Deng'
+  # 自我介绍简短
+  profile: 'Oh, You Are Really Coder...'
+  # 自我介绍头像
+  avatar: '/static/image/avatar.jpg'
+  # 自我介绍第一段
+  paraOne: 'Oh, You Are Really Code...'
+  # 自我介绍第二段
+  paraTwo:
+  # 技术栈标签
+  stack: ['Java','MySQL','Thymeleaf']
+  # 兴趣标签
+  hobby: ['编程','阅读','感受','运动']

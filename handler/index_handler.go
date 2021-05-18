@@ -3,74 +3,100 @@ package handler
 import (
 	"html/template"
 	"net/http"
+	"path"
+	"strconv"
 
 	"allandeng.cn/allandeng/go-blog/config"
 	"allandeng.cn/allandeng/go-blog/repository"
-	"github.com/op/go-logging"
+	"github.com/Masterminds/sprig"
 )
 
-var log *logging.Logger
-
-func init() {
-	log = config.Logger
-}
-
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Errorf("Error in index_handler : %s", err)
+			ErrorHandler(w, r)
+		}
+	}()
 	model := make(map[string]interface{})
 
 	//get types
 	ptpye := repository.NewPage(1, 6)
 	types, err := repository.GetTypeRepository().FindTop(&ptpye)
 	model["types"] = types
-	log.Debugf("Find types: %v", types)
 	if err != nil {
-		log.Errorf("Error repository : ", err)
-		ErrorHandler(w, r)
-		return
+		panic(err)
 	}
 	//get types
 	ptag := repository.NewPage(1, 10)
 	tags, err := repository.GetTagRepository().FindTop(&ptag)
 	model["tags"] = tags
-	log.Debugf("Find tags: %v", tags)
 	if err != nil {
-		log.Errorf("Error repository : ", err)
-		ErrorHandler(w, r)
-		return
+		panic(err)
+	}
+
+	query := r.URL.Query()
+	pagenum := 1
+	if pagestr := query.Get("page"); pagestr != "" {
+		pagenum, err = strconv.Atoi(pagestr)
+		if err != nil || pagenum <= 0 {
+			pagenum = 1
+		}
 	}
 	//get blogs
-	pblog := repository.NewPage(1, 10)
+	pblog := repository.NewPage(pagenum, 10)
 	blogs, err := repository.GetBlogRepository().FindAll(&pblog)
+	pblog.Update()
+	if pblog.Nums < pblog.Index {
+		pblog.Index = 1
+		blogs, err = repository.GetBlogRepository().FindAll(&pblog)
+	}
 	model["blogs"] = blogs
-	log.Debugf("Find blogs: %v", blogs)
 	if err != nil {
-		log.Errorf("Error repository : ", err)
-		ErrorHandler(w, r)
-		return
+		panic(err)
 	}
 
 	//get recommand blogs
 	precommands := repository.NewPage(1, 8)
 	recommands, err := repository.GetBlogRepository().FindRecommendTop(&precommands)
 	model["recommands"] = recommands
-	log.Debugf("Find recommands: %v", recommands)
 	if err != nil {
-		log.Errorf("Error repository : ", err)
-		ErrorHandler(w, r)
-		return
+		panic(err)
 	}
+
+	pblog.Update()
 	model["page"] = pblog
 	model["pagetitle"] = "首页"
 	model["active"] = 1
-	tmpl, err := template.ParseFiles("views/index.html", "views/_fragments.html")
+	model["massage"] = config.GlobalMassage
+	base := path.Base("views/index.html")
+	err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/index.html", "views/_fragments.html")).Execute(w, model)
+
 	if err != nil {
-		log.Errorf("Error Create template failed : ", err)
-		ErrorHandler(w, r)
-		return
+		panic(err)
 	}
-	tmpl.Execute(w, model)
 }
 
 func ErrorHandler(w http.ResponseWriter, r *http.Request) {
+	model := make(map[string]interface{})
+	model["massage"] = config.GlobalMassage
+	model["active"] = 0
+	model["pagetitle"] = "500-服务器错误"
+	base := path.Base("views/error/500.html")
+	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/error/500.html", "views/_fragments.html")).Execute(w, model)
+	if err != nil {
+		log.Errorf("Error in error_handler : %s", err)
+	}
+}
 
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	model := make(map[string]interface{})
+	model["massage"] = config.GlobalMassage
+	model["active"] = 0
+	model["pagetitle"] = "404-找不到网页"
+	base := path.Base("views/error/404.html")
+	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/error/404.html", "views/_fragments.html")).Execute(w, model)
+	if err != nil {
+		log.Errorf("Error in error_handler : %s", err)
+	}
 }

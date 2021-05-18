@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<!--定义fragment需要替换的部分-->
+<html lang="en" >
+
+<div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini" >
+    <a href="@{/blog/{id}(id = ${blog.id})}" class="item m-white" th:each="blog : ${newblogs}" th:text="${blog.title}">用户故事</a>
+    <!--/*-->
+    <a href="#" class="item m-white">用户故事</a>
+    <a href="#" class="item m-white">用户故事</a>
+    <a href="#" class="item m-white">用户故事</a>
+    <!--*/-->
+</div>
