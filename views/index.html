@@ -11,7 +11,6 @@
 <div class="m-padded-tb-big m-container-large">
     <div class="ui container">
         <div class="ui stackable grid">
-
             <!--左边：文章列表-->
             <div class="eleven wide column ">
                 <!-- 头部-->
@@ -66,7 +65,7 @@
                             <div class="five wide column">
                                 <a href="#" target="_blank">
                                     <img href="/blog/{{.ID}}" target="_blank" src="{{.FirstPicture}}" alt="" class="ui image">
-                                </a>
+                                </a>                            
                             </div>
                         </div>
 
@@ -95,7 +94,7 @@
             <!--右边：卡片-->
             <div class="five wide column">
                 <!--自我介绍-->
-                <div class="m-shadow-small fadeIn " th:with="stacks = #{about.stack} , hobbys = #{about.hobby}">
+                <div class="m-shadow-small fadeIn " >
                     <div class="fadeIn">
                         <div class="ui top attached segment fadeIn center aligned">
                             <a href="/about">

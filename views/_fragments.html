@@ -10,17 +10,17 @@
     <meta name="viewport" content="width=device-width , initial-scale=1.0">
     <title >{{.}}-Allan的个人博客</title>
     <!--semantic-UI-->
-    <link rel="stylesheet" href="../static/lib/semantic/semantic.min.css" th:href="@{/lib/semantic/semantic.min.css}">
+    <link rel="stylesheet" href="../static/lib/semantic/semantic.min.css" >
     <!--自定义样式-->
-    <link rel="stylesheet" href="../static/css/me.css" th:href="@{/css/me.css}">
+    <link rel="stylesheet" href="../static/css/me.css">
     <!--typo中文排版-->
-    <link rel="stylesheet" href="../static/css/typo.css" th:href="@{/css/typo.css}">
+    <link rel="stylesheet" href="../static/css/typo.css">
     <!--animate动画-->
-    <link rel="stylesheet" href="../static/css/animate.css" th:href="@{/css/animate.css}">
+    <link rel="stylesheet" href="../static/css/animate.css">
     <!--prism语法高亮-->
-    <link rel="stylesheet" href="../static/lib/prism/prism.css" th:href="@{/lib/prism/prism.css}">
+    <link rel="stylesheet" href="../static/lib/prism/prism.css">
     <!--tocbot目录生成-->
-    <link rel="stylesheet" href="../static/lib/tocbot/tocbot.css" th:href="@{/lib/tocbot/tocbot.css}">
+    <link rel="stylesheet" href="../static/lib/tocbot/tocbot.css">
     <!--icon-->
     <link rel="shortcut icon" href="../static/favicon.ico">
 </head>
@@ -60,9 +60,9 @@
                 {{end}}
             ><i class="info icon"></i>关于我</a>
             <div class="m-item right item  m-mobile-hide m-magin-top-tiny">
-                <form name="search" action="#" th:action="@{/search}" target="_blank" method="post">
+                <form name="search" action="/search" target="_blank" method="post">
                     <div class="ui icon inverted transparent input">
-                        <input type="text" name="query" placeholder="搜索" th:value="${query}">
+                        <input type="text" name="query" placeholder="搜索" >
                         <i class="search link  icon " onclick="document.forms['search'].submit()"></i>
                     </div>
                 </form>
@@ -84,7 +84,7 @@
             <div class="four wide column"  >
                 <h4 class="ui inverted header m-text-spaced">最新博客</h4>
                 <div id="newblog-container">
-                    <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini" th:fragment="newblogList">
+                    <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini" >
                         <a href="@{/blog/{id}(id = ${blog.id})}" class="item m-white" th:each="blog : ${newblogs}" th:text="${blog.title}">用户故事</a>
                         <!--/*-->
                         <a href="#" class="item m-white">用户故事</a>

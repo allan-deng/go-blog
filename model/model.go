@@ -50,6 +50,7 @@ type Comment struct {
 	ReplyComments []Comment
 	//父评论
 	ParentCommentID int64 `gorm:"comment:'父评论id';NOT NULL;INDEX"`
+	ParentComment   *Comment
 	//是否为管理员评论
 	AdminComment bool `gorm:"comment:'是否为管理员评论';type:tinyint;default:0"`
 }

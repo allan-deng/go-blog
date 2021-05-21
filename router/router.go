@@ -25,9 +25,20 @@ func Register(r *mux.Router) {
 	//静态文件路由
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
+	//首页
 	r.HandleFunc("/", handler.IndexHandler)
-	//TODO:
-	// r.HandleFunc("/footer/newblog", handler.NewBlogHandler)
+	//搜索结果
+	r.HandleFunc("/search", handler.SearchHandler)
+	//博客页面
+	r.HandleFunc("/blog/{id:[0-9]+}", handler.BlogHandler)
+	//获取验证码
+	r.HandleFunc("/captcha", handler.CaptchaHandler)
+	//获取footer中newblog
+	r.HandleFunc("/footer/newblog", handler.NewBlogHandler)
+	//type页面
+	r.HandleFunc("/types/{id}", handler.TypeHandler)
+	//tag页面
+	r.HandleFunc("/tags/{id}", handler.TagHandler)
 
 	//管理端的router
 	// adminRouter := r.PathPrefix("/admin").Subrouter()
@@ -40,7 +51,6 @@ func logMidware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 请求信息写入日志
 		log.Debugf("Receipt request : \n %s", getHttpRequestInfo(r, true))
-		log.Infof("Receipt request : \n %s", getHttpRequestInfo(r, false))
 		next.ServeHTTP(w, r)
 	})
 }
@@ -69,6 +79,9 @@ func getHttpRequestInfo(r *http.Request, detail bool) string {
 		s, _ := ioutil.ReadAll(r.Body)
 		buffer.WriteString(string(s))
 		buffer.WriteString("\n")
+
+		r.Body.Close()
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(s))
 	}
 	return buffer.String()
 }

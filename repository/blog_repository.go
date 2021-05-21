@@ -25,6 +25,10 @@ type IBlogRepository interface {
 	UpdateBlog(*model.Blog) error
 	//按id查找
 	FindBlogById(int64) (*model.Blog, error)
+	//按typeid查找
+	FindBlogByTypeId(int64, *Page) ([]model.Blog, error)
+	//按tagid查找
+	FindBlogByTagId(int64, *Page) ([]model.Blog, error)
 	//分页查找全部，按createtime排序
 	FindAll(*Page) ([]model.Blog, error)
 	//模糊查找，按createtime排序
@@ -121,6 +125,55 @@ func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
 func (s *BlogRepository) FindBlogById(blogId int64) (*model.Blog, error) {
 	blog := &model.Blog{}
 	return blog, s.mysqlDb.Preload("User").Preload("Type").Preload("Tags").Preload("Comments").First(blog, blogId).Error
+}
+
+func (s *BlogRepository) FindBlogByTypeId(typeId int64, page *Page) ([]model.Blog, error) {
+	count := 0
+	s.mysqlDb.Model(&model.Blog{}).Where("type_id = ?", typeId).Count(&count)
+	page.Count = count
+	limit := page.Size
+	offset := ((page.Index - 1) * page.Size)
+
+	var res []model.Blog
+	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("User").Preload("Type").Preload("Comments").Preload("Tags").Order("create_time DESC").Where("type_id = ?", typeId).Find(&res).Error
+	return res, err
+	// return blog, s.mysqlDb.Preload("User").Preload("Type").Preload("Tags").Preload("Comments").First(blog, blogId).Error
+}
+
+func (s *BlogRepository) FindBlogByTagId(tagId int64, page *Page) ([]model.Blog, error) {
+	count := 0
+	row := s.mysqlDb.Raw("select count(*) from blog_tag where tag_id = ?", tagId).Row()
+	row.Scan(&count)
+	page.Count = count
+	limit := page.Size
+	offset := ((page.Index - 1) * page.Size)
+
+	var res []model.Blog
+	rows, err := s.mysqlDb.Raw("select * from blog where id in (select blog_id from blog_tag where tag_id = ?) ORDER BY create_time DESC limit ? offset ?", tagId, limit, offset).Rows()
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var temp model.Blog
+		s.mysqlDb.ScanRows(rows, &temp)
+		user, err := GetUserRepository().FindUserById(temp.UserID)
+
+		blogtype, err := GetTypeRepository().FindTypeById(temp.TypeID)
+
+		comments, err := GetCommentRepository().FindAllCommentByBlogId(temp.ID)
+
+		temp.User = *user
+		temp.Type = *blogtype
+		temp.Comments = comments
+		res = append(res, temp)
+		if err != nil {
+
+		}
+
+	}
+	return res, err
+	// return blog, s.mysqlDb.Preload("User").Preload("Type").Preload("Tags").Preload("Comments").First(blog, blogId).Error
 }
 
 func (s *BlogRepository) FindAll(page *Page) ([]model.Blog, error) {

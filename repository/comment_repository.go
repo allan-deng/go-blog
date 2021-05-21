@@ -21,7 +21,11 @@ type ICommentRepository interface {
 	//改
 	UpdateComment(*model.Comment) error
 	//用Commentid查找顶级评论
-	FindParentCommentByCommentId(CommentId int64) ([]model.Comment, error)
+	FindParentCommentByCommentId(CommentId int64) (model.Comment, error)
+	//用blogid查找顶级评论
+	FindParentCommentByBlogId(blogid int64) ([]model.Comment, error)
+	//用blogid查找所有评论
+	FindAllCommentByBlogId(blogid int64) ([]model.Comment, error)
 	//按id查找
 	FindCommentById(int64) (*model.Comment, error)
 	//用父评论id找到所有的子评论
@@ -77,9 +81,23 @@ func (s *CommentRepository) UpdateComment(comment *model.Comment) error {
 }
 
 //用Commentid查找顶级评论
-func (s *CommentRepository) FindParentCommentByCommentId(CommentId int64) ([]model.Comment, error) {
+func (s *CommentRepository) FindParentCommentByCommentId(commentId int64) (model.Comment, error) {
+	var res model.Comment
+	err := s.mysqlDb.Where("id = ?", commentId).First(&res).Error
+	return res, err
+}
+
+//用blogid查找顶级评论
+func (s *CommentRepository) FindParentCommentByBlogId(blogid int64) ([]model.Comment, error) {
 	var res []model.Comment
-	err := s.mysqlDb.Order("create_time ASC").Where("parent_comment_id = 0").Where("Comment_id = ?", CommentId).Find(&res).Error
+	err := s.mysqlDb.Order("create_time ASC").Where("parent_comment_id = 0").Where("blog_id = ?", blogid).Find(&res).Error
+	return res, err
+}
+
+//用blogid查找所有评论
+func (s *CommentRepository) FindAllCommentByBlogId(blogid int64) ([]model.Comment, error) {
+	var res []model.Comment
+	err := s.mysqlDb.Order("create_time ASC").Where("blog_id = ?", blogid).Find(&res).Error
 	return res, err
 }
 

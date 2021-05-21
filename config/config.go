@@ -119,12 +119,12 @@ func LoadMassage(path string) error {
 func init() {
 	err := LoadConfig("./config/config.yaml")
 	if err != nil {
-		fmt.Errorf("panic load config file failed: ")
+		fmt.Println("panic load config file failed: ")
 		panic(err)
 	}
 	err = LoadMassage("./config/messages.yaml")
 	if err != nil {
-		fmt.Errorf("panic load messages file failed: ")
+		fmt.Println("panic load messages file failed: ")
 		panic(err)
 	}
 	InitLogger()
