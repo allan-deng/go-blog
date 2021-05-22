@@ -1,6 +1,8 @@
 package service
 
 import (
+	"sort"
+
 	"allandeng.cn/allandeng/go-blog/config"
 	"allandeng.cn/allandeng/go-blog/model"
 	"allandeng.cn/allandeng/go-blog/repository"
@@ -82,4 +84,33 @@ func AddAllChildren(parentComment model.Comment) ([]model.Comment, error) {
 		}
 	}
 	return comments, nil
+}
+
+type Archive struct {
+	Year  string
+	Blogs []model.Blog
+}
+
+func ArchiveBlog() ([]Archive, error) {
+	var res []Archive
+	rep := repository.GetBlogRepository()
+	years, err := rep.FindGroupYear()
+	if err != nil {
+		log.Errorf("Error can't find group year, err: %s", err)
+		return nil, err
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice((years))))
+	for i := 0; i < len(years); i++ {
+		blogs, err := rep.FindByYear(years[i])
+		if err != nil {
+			log.Errorf("Error can't find blog by year, year: %s, err: %s", years[i], err)
+			return nil, err
+		}
+		temp := &Archive{
+			Year:  years[i],
+			Blogs: blogs,
+		}
+		res = append(res, *temp)
+	}
+	return res, nil
 }

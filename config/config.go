@@ -44,10 +44,11 @@ type Mysql struct {
 }
 
 type Massage struct {
-	Nav   Nav   `yaml:"nav"`
-	Index Index `yaml:"index"`
-	Blog  Blog  `yaml:"blog"`
-	About About `yaml:"about"`
+	Nav           Nav    `yaml:"nav"`
+	Index         Index  `yaml:"index"`
+	Blog          Blog   `yaml:"blog"`
+	About         About  `yaml:"about"`
+	CommentAvatar string `yaml:"commentAvatar"`
 }
 
 type Nav struct {

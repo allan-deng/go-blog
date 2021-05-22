@@ -1,0 +1,74 @@
+<!--留言区域列表-->
+    <div th:fragment="commentList">
+        <form method="post" class="ui threaded comments" style="max-width: 100%;">
+            <h3 class="ui dividing header">评论</h3>
+            {{range .comments}}
+            <div class="comment">
+                <a class="avatar">
+                    <img src="{{.Avatar}}">
+                </a>
+                <div class="content">
+                    <a class="author" >
+                        <span>{{.Nickname}}</span>
+                        {{if .AdminComment}}
+                        <div class="ui mini basic blue left pointing label m-padded-mini">博主</div>
+                        {{end}}
+                    </a>
+                    <div class="metadata">
+                        <span class="date">{{.CreateTime.Format "2006-01-02 15:04"}}</span>
+                    </div>
+                    <div class="text">
+                        {{.Content}}
+                    </div>
+                    <div class="actions">
+                        <a class="reply" data-commentid="{{.ID}}" data-commentnickname="{{.Nickname}}" onclick="reply(this)">回复</a>
+                        {{if $.admin}}
+                        <a href="/comments/delete/{{.ID}}">删除</a>
+                        {{end}}
+                    </div>
+                </div>
+                {{if gt (len .ReplyComments) 0}}
+                <div class="comments" >                                           
+                    {{range .ReplyComments}}
+                    <div class="comment">
+                        <a class="avatar">
+                            <img src="{{.Avatar}}" >
+                        </a>
+                        <div class="content">
+                            <a class="author" >
+                                <span >{{.Nickname}}</span>
+                                {{if .AdminComment}}
+                                <div class="ui mini basic blue left pointing label m-padded-mini">博主</div>
+                                {{end}}
+                                &nbsp;<span class="m-teal">@ {{.ParentComment.Nickname}}</span>
+                            </a>
+                            <div class="metadata">
+                                <span class="date">{{.CreateTime.Format "2006-01-02 00:00"}}</span>
+                            </div>
+                            <div class="text">
+                                {{.Content}}
+                            </div>
+                            <div class="actions">
+                                <a class="reply" data-commentid="{{.ID}}" data-commentnickname="{{.Nickname}}" onclick="reply(this)">回复</a>
+                                {{if $.admin}}
+                                <a href="/comments/delete/{{.ID}}">删除</a>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+            {{end}}
+
+        </form>
+        <!--操作提示-->
+        {{if gt (len .commentmassage) 0}}
+        <div class="ui success message" >
+            <i class="close icon"></i>
+            <div class="header">提示：</div>
+            <p >{{.commentmassage}}</p>
+        </div>
+        {{end}}
+    </div>

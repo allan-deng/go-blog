@@ -1,3 +1,4 @@
+commentAvatar: '/static/image/wechat.png'
 nav:
   #导航栏显示的标题
   title: 'Allan的个人博客'

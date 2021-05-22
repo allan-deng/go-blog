@@ -39,6 +39,8 @@ type IBlogRepository interface {
 	FindGroupYear() ([]string, error)
 	//安年份查找，按createtime排序
 	FindByYear(string) ([]model.Blog, error)
+	//博客计数
+	Count() (int64, error)
 }
 
 type BlogRepository struct {
@@ -246,4 +248,9 @@ func (s *BlogRepository) FindByYear(year string) ([]model.Blog, error) {
 		res = append(res, blog)
 	}
 	return res, err
+}
+
+func (s *BlogRepository) Count() (int64, error) {
+	var count int64
+	return count, s.mysqlDb.Model(&model.Blog{}).Count(&count).Error
 }

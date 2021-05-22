@@ -185,7 +185,7 @@
                         <!--留言提交区域-->
                         <div class="ui form" id="comment-form">
                             <input type="hidden" name="blog.id" value="{{.blog.ID}}">
-                            <input type="hidden" name="parentComment.id" value="-1"   >
+                            <input type="hidden" name="parentComment.id" value="0"   >
                             <div class="field">
                                 <textarea name="content" placeholder="请输入评论信息..." th:text="${comment} != null ? ${comment.content}"></textarea>
                             </div>
@@ -361,14 +361,16 @@
             console.log('校验成功');
             postData();
             console.log('刷新完成');
+            changeCaptcha()
         }else {
             console.log('校验失败');
         }
+        
     })
 
     //获取数据
     function postData() {
-        $("#comment-container").load(/*[[@{/comments}]]*/"",{
+        $("#comment-container").load("/comments",{
             "parentComment.id" : $("[name='parentComment.id']").val(),
             "blog.id" : $("[name='blog.id']").val(),
             "nickname": $("[name='nickname']").val(),
@@ -389,7 +391,7 @@
 
     function clearContent() {
         $("[name='content']").val('');
-        $("[name='parentComment.id']").val(-1);
+        $("[name='parentComment.id']").val(0);
         $("[name='content']").attr("placeholder", "请输入评论信息...");
     }
 

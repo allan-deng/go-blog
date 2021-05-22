@@ -39,7 +39,14 @@ func Register(r *mux.Router) {
 	r.HandleFunc("/types/{id}", handler.TypeHandler)
 	//tag页面
 	r.HandleFunc("/tags/{id}", handler.TagHandler)
-
+	//archive页面
+	r.HandleFunc("/archives", handler.ArchiveHandler)
+	//about
+	r.HandleFunc("/about", handler.AboutHandler)
+	//创建comments
+	r.HandleFunc("/comments", handler.CommentCreateHandler)
+	//删除comments
+	r.HandleFunc("/comments/delete/{id:[0-9]+}", handler.CommentDeleteHandler)
 	//管理端的router
 	// adminRouter := r.PathPrefix("/admin").Subrouter()
 

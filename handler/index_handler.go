@@ -236,6 +236,28 @@ func CaptchaHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// path: "/about"
+func AboutHandler(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Errorf("Error in index_handler : %s", err)
+			ErrorHandler(w, r)
+		}
+	}()
+	model := make(map[string]interface{})
+
+	model["pagetitle"] = "关于我"
+	model["active"] = 5
+	model["massage"] = config.GlobalMassage
+	model["commentmassage"] = ""
+	base := path.Base("views/about.html")
+	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/about.html", "views/_fragments.html", "views/_fragments-aboutme.html")).Execute(w, model)
+
+	if err != nil {
+		panic(err)
+	}
+}
+
 func ErrorHandler(w http.ResponseWriter, r *http.Request) {
 	model := make(map[string]interface{})
 	model["massage"] = config.GlobalMassage
