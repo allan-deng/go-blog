@@ -5,6 +5,7 @@ mysql:
   dbname: blog
 web:
   port: 8080
+  uploadpath : "/upload"
 webpage:
   icpinfo: '鄂ICP备 19011531号-1'
 log:

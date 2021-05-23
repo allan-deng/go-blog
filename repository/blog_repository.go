@@ -41,6 +41,8 @@ type IBlogRepository interface {
 	FindByYear(string) ([]model.Blog, error)
 	//博客计数
 	Count() (int64, error)
+	//按标题、type、recommend查找
+	FindBlogByTitleAndTypeIdAndRecommend(title string, typeid int64, recommend bool) ([]model.Blog, error)
 }
 
 type BlogRepository struct {
@@ -140,6 +142,17 @@ func (s *BlogRepository) FindBlogByTypeId(typeId int64, page *Page) ([]model.Blo
 	err := s.mysqlDb.Offset(offset).Limit(limit).Preload("User").Preload("Type").Preload("Comments").Preload("Tags").Order("create_time DESC").Where("type_id = ?", typeId).Find(&res).Error
 	return res, err
 	// return blog, s.mysqlDb.Preload("User").Preload("Type").Preload("Tags").Preload("Comments").First(blog, blogId).Error
+}
+
+func (s *BlogRepository) FindBlogByTitleAndTypeIdAndRecommend(title string, typeid int64, recommend bool) ([]model.Blog, error) {
+	var res []model.Blog
+	rec := 0
+	if recommend {
+		rec = 1
+	}
+	title = "%" + title + "%"
+	err := s.mysqlDb.Preload("User").Preload("Type").Preload("Comments").Preload("Tags").Order("create_time DESC").Where("type_id = ?", typeid).Where("recommend = ?", rec).Where("title like ?", title).Find(&res).Error
+	return res, err
 }
 
 func (s *BlogRepository) FindBlogByTagId(tagId int64, page *Page) ([]model.Blog, error) {

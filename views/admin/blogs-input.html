@@ -1,70 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="admin/_fragments :: head(~{::title})">
-    <meta charset="UTF-8">
-    <!--    移动端缩放设置-->
-    <meta name="viewport" content="width=device-width , initial-scale=1.0">
-    <title>博客发布</title>
-    <link href="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../static/css/me.css">
-    <!--    editor.md-->
-    <link rel="stylesheet" href="../../static/lib/editormd/css/editormd.css">
-
-</head>
-
+{{template "header" .pagetitle}}
 <body>
-<!--    导航-->
-<nav th:replace="admin/_fragments :: menu(1)" class="ui inverted attached segment m-padded-tb-mini m-shadow-small">
-    <div class="ui container ">
-        <div class="ui inverted secondary stackable menu">
-            <h2 class="ui blue theader item">博客管理后台</h2>
-            <a href="#" class="active m-item item m-mobile-hide m-magin-top-tiny"><i class="home icon"></i>博客</a>
-            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="idea icon"></i>分类</a>
-            <a href="#" class="m-item item m-mobile-hide m-magin-top-tiny"><i class="tags icon"></i>标签</a>
-            <div class="m-item m-mobile-hide right menu">
-                <div class="ui  dropdown item">
-                    <div class="text">
-                        <img class="ui avatar image" src="../../static/image/03.jpg">
-                        Allan
-                    </div>
-                    <i class="dropdown icon"></i>
-                    <div class="menu">
-                        <a href="" class="item">注销</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <a href="#" class="m-menu ui black icon button m-right-top m-mobile-show">
-        <i class="sidebar icon"></i>
-    </a>
-</nav>
-<!--二级导航-->
-<div th:replace="admin/_fragments :: navmenu(1)" class="ui attached pointing menu">
-    <div class="ui container">
-        <div class="right menu">
-            <a href="#" class="active item">发布</a>
-            <a href="#" class=" item">管理</a>
-        </div>
+<!--导航-->
+{{template "menu" .}}
 
-    </div>
-</div>
+<!--二级导航-->
+{{template "secondmenu" .secondactive}}
 <!--中间部分-->
 <div class="m-padded-tb-big m-container-small">
     <div class="ui container">
         <div class="ui segment">
             <!--表单-->
-            <!--/*@thymesVar id="blog" type="cn.allandeng.blog.domain.Blog"*/-->
-            <form action="#" method="post" class="ui form" id="blog-form" th:object="${blog}" th:action="@{/admin/blogs}" >
-                <input type="hidden" name="published" id="published" th:value="*{published}">
-                <input type="hidden" name="id" id="id" th:value="*{id}">
+            <form method="post" class="ui form" id="blog-form" action="/admin/blogs" >
+                <input type="hidden" name="published" id="published" value="{{.blog.Published}}">
+                <input type="hidden" name="id" id="id" value="{{.blog.ID}}">
                 <div class="required field">
                     <!--类型和标题-->
                     <div class="ui fluid left labeled input">
-
                         <div class="ui selection compact blue basic dropdown label">
-                            <input type="hidden" value="原创" name="flag" th:value="*{flag}!=null ? *{flag} : '原创'">
+                            <input type="hidden" value="原创" name="flag" value="{{.blog.Flag}}">
                             <i class="dropdown icon"></i>
                             <div class="text">原创</div>
                             <div class="menu">
@@ -74,7 +30,7 @@
                             </div>
 
                         </div>
-                        <input type="text" name="title" placeholder="文章标题"  th:value="*{title}">
+                        <input type="text" name="title" placeholder="文章标题"  value="{{.blog.Title}}">
                     </div>
                 </div>
 
@@ -82,7 +38,7 @@
                 <div class="required field">
                     <!--使用editormd,设置叠放层次置顶-->
                     <div id="md-content" style="z-index: 1 !important;">
-                        <textarea name="content" id="" placeholder="博客内容" style="display: none" th:text="*{content}"></textarea>
+                        <textarea name="content" id="" placeholder="博客内容" style="display: none" value="{{.blog.Content}}"></textarea>
                     </div>
 
                 </div>
@@ -95,11 +51,13 @@
                             <!--类型选择-->
                             <div class="ui compact blue basic label">分类</div>
                             <div class="ui fluid selection dropdown">
-                                <input type="hidden" name="type.id"  th:value="*{type}!=null ? *{type.id}">
+                                <input type="hidden" name="type.id"  value="{{.blog.Type.ID}}">
                                 <i class="dropdown icon"></i>
                                 <div class="text">分类</div>
                                 <div class="menu">
-                                    <div th:each="type : ${types}" class="item" data-value="1" th:data-value="${type.id}" th:text="${type.name}">错误日志</div>
+                                    {{range .types}}
+                                    <div class="item" data-value="{{.ID}}" >{{.Name}}</div>
+                                    {{end}}
                                 </div>
 
                             </div>
@@ -113,15 +71,15 @@
                             <!--类型选择-->
                             <div class="ui compact blue basic label">标签</div>
                             <div class="ui fluid multiple search selection dropdown">
-                                <input type="hidden" name="tagIds" th:value="*{tagIds}!=null ? *{tagIds} : ''">
+                                <input type="hidden" name="tagIds" value="{{.blog.TagIds}}">
                                 <i class="dropdown icon"></i>
                                 <div class="text">标签</div>
                                 <div class="menu">
-                                    <div th:each="tag : ${tags}" class="item" th:data-value="${tag.id}" th:text="${tag.name}">java</div>
+                                    {{range .tags}}
+                                    <div class="item" data-value="{{.ID}}" >{{.Name}}</div>
+                                    {{end}}
                                 </div>
-
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -130,7 +88,7 @@
                 <div class="required field">
                     <div class="ui left labeled input">
                         <div class="ui compact blue basic label">首图</div>
-                        <input type="text" name="firstPicture" th:value="*{firstPicture}" placeholder="首图引用地址">
+                        <input type="text" name="firstPicture" value="{{.blog.FirstPicture}}"placeholder="首图引用地址">
                     </div>
                 </div>
 
@@ -138,7 +96,7 @@
                 <div class="required field">
                     <!--文本框-->
                     <div>
-                        <textarea name="description" placeholder="博客描述" th:text="*{description}"></textarea>
+                        <textarea name="description" placeholder="博客描述" value="{{.blog.Description}}" ></textarea>
                     </div>
                 </div>
 
@@ -184,55 +142,12 @@
 </div>
 
 <!--    footer-->
-<footer th:replace="admin/_fragments :: footer" class="ui inverted vertical segment m-padded-tb-massive">
-    <div class="ui center aligned container">
-        <!--            与BootStrap不同 水平空间划分为16份-->
-        <div class="ui inverted divided stackable grid">
-            <div class="three wide column">
-                <div class="ui inverted link list">
-                    <div class="item">
-                        <img src="../../static/image/01.jpg" class="ui rounded image" alt="" style="width: 100px">
-                    </div>
-                </div>
-            </div>
-            <div class="three wide column">
-                <h4 class="ui inverted header m-text-spaced">最新博客</h4>
-                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
-                    <a href="#" class="item m-white">用户故事</a>
-                    <a href="#" class="item m-white">用户故事</a>
-                    <a href="#" class="item m-white">用户故事</a>
-                </div>
-            </div>
-            <div class="four wide column">
-                <h4 class="ui inverted header m-text-spaced">联系我</h4>
-                <div class="ui inverted link list m-text-thin m-text-spaced m-opacity-mini">
-                    <a href="#" class="item m-white">Email：allandeng97@foxmail.com</a>
-                    <a href="#" class="item m-white">Github：allandengcn</a>
-                </div>
-            </div>
-            <div class="six wide column">
-                <h4 class="ui inverted header m-text-spaced">AllanDeng</h4>
-                <p class="m-text-thin m-text-spaced m-opacity-mini  m-white">这是我的个人博客。这是我的个人博客。这是我的个人博客。这是我的个人博客。</p>
-            </div>
-        </div>
-    </div>
-    <div class="ui inverted section divider"></div>
-    <div class="ui center aligned container m-text-thin m-text-spaced m-opacity-mini">
-        Copyright © 2020 Allan Deng . Designed by <a href="https://allandeng.cn" class="item m-white">Allan Deng</a> .
-        <br>
-        <a href="http://www.miitbeian.gov.cn/" class="item  m-white">鄂ICP备 19011531号</a>
-    </div>
-</footer>
-
-<!--/*/<th:block th:replace="admin/_fragments :: script">/*/-->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.2/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.2.4/dist/semantic.min.js"></script>
-    <script src="../../static/lib/editormd/editormd.js"></script>
-<!--/*/</th:block>/*/-->
+{{template "footer" .}}
+{{template "script"}}
 
 
 <!--顶部导航栏菜单按钮的显示与隐藏-->
-<script>
+<script language="JavaScript" type="text/javascript">
     //初始化编辑器
     var mdEditor;
     $(function () {
@@ -255,7 +170,7 @@
             flowChart: true,
             sequenceDiagram: true,
             syncScrolling: "single",
-            path: "/lib/editormd/lib/",
+            path: "/static/lib/editormd/lib/",
             imageUpload : true,
             imageFormats : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
             imageUploadURL : "/uploadfile", //图片上传的action

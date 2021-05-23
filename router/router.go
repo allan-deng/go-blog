@@ -47,8 +47,22 @@ func Register(r *mux.Router) {
 	r.HandleFunc("/comments", handler.CommentCreateHandler)
 	//删除comments
 	r.HandleFunc("/comments/delete/{id:[0-9]+}", handler.CommentDeleteHandler)
+	//upload
+	r.HandleFunc("/uploadfile", handler.UploadHandler)
+
 	//管理端的router
-	// adminRouter := r.PathPrefix("/admin").Subrouter()
+	adminRouter := r.PathPrefix("/admin").Subrouter()
+	adminRouter.HandleFunc("/", handler.LoginPageHandler)
+	adminRouter.HandleFunc("", handler.LoginPageHandler)
+	adminRouter.HandleFunc("/login", handler.LoginHandler)
+	adminRouter.HandleFunc("/logout", handler.LogoutHandler)
+	adminRouter.HandleFunc("/index", handler.AdminIndexHandler)
+
+	adminRouter.HandleFunc("/blogs", handler.AdminBlogListHandler)          //get:博客列表 post:上传博客
+	adminRouter.HandleFunc("/blogs/search", handler.AdminBlogSearchHandler) //post:搜索
+	adminRouter.HandleFunc("/blogs/input", handler.AdminBlogInputHandler)   //get:返回写博客页面
+	// adminRouter.HandleFunc("/blogs/{id:[0-9]+}/intput", handler.AdminBlogUpdateHandler) //get:更新博客页面
+	// adminRouter.HandleFunc("/blogs/{id:[0-9]+}/delete", handler.AdminBlogDeleteHandler) //get:删除博客
 
 	r.NotFoundHandler = http.HandlerFunc(handler.NotFoundHandler)
 }

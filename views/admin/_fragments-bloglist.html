@@ -1,0 +1,33 @@
+<table th:fragment="blogList" class="ui compact teal table">
+    <thead>
+    <tr>
+        <th></th>
+        <th>标题</th>
+        <th>类型</th>
+        <th>推荐</th>
+        <th>发表时间</th>
+        <th>更新时间</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{range $i, $blog := .blogs}}
+    <tr>
+        <td>{{add $i 1}}</td>
+        <td>{{$blog.Title}}</td>
+        <td>{{$blog.Type.Name}}</td>
+        {{if $blog.Recommend}}
+        <td>是</td>
+        {{else}}
+        <td>否</td>
+        {{end}}
+        <td>{{$blog.CreateTime.Format "2006-01-02 15:04"}}</td>
+        <td>{{$blog.UpdateTime.Format "2006-01-02 15:04"}}</td>
+        <td>
+            <a href="/admin/blogs/{{.ID}}/input" class="ui mini teal basic button">编辑</a>
+            <a href="/admin/blogs/{{.ID}}/delete" class="ui mini red basic button">删除</a>
+        </td>
+    </tr>
+    {{end}}
+    </tbody>   
+</table>
