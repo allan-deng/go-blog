@@ -26,45 +26,56 @@ func Register(r *mux.Router) {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
 
 	//首页
-	r.HandleFunc("/", handler.IndexHandler)
+	r.HandleFunc("/", BlogHandlerWrapper(handler.IndexHandler))
 	//搜索结果
-	r.HandleFunc("/search", handler.SearchHandler)
+	r.HandleFunc("/search", BlogHandlerWrapper(handler.SearchHandler))
 	//博客页面
-	r.HandleFunc("/blog/{id:[0-9]+}", handler.BlogHandler)
+	r.HandleFunc("/blog/{id:[0-9]+}", BlogHandlerWrapper(handler.BlogHandler))
 	//获取验证码
-	r.HandleFunc("/captcha", handler.CaptchaHandler)
+	r.HandleFunc("/captcha", BlogHandlerWrapper(handler.CaptchaHandler))
 	//获取footer中newblog
-	r.HandleFunc("/footer/newblog", handler.NewBlogHandler)
+	r.HandleFunc("/footer/newblog", BlogHandlerWrapper(handler.NewBlogHandler))
 	//type页面
-	r.HandleFunc("/types/{id}", handler.TypeHandler)
+	r.HandleFunc("/types/{id}", BlogHandlerWrapper(handler.TypeHandler))
 	//tag页面
-	r.HandleFunc("/tags/{id}", handler.TagHandler)
+	r.HandleFunc("/tags/{id}", BlogHandlerWrapper(handler.TagHandler))
 	//archive页面
-	r.HandleFunc("/archives", handler.ArchiveHandler)
+	r.HandleFunc("/archives", BlogHandlerWrapper(handler.ArchiveHandler))
 	//about
-	r.HandleFunc("/about", handler.AboutHandler)
+	r.HandleFunc("/about", BlogHandlerWrapper(handler.AboutHandler))
 	//创建comments
-	r.HandleFunc("/comments", handler.CommentCreateHandler)
+	r.HandleFunc("/comments", BlogHandlerWrapper(handler.CommentCreateHandler))
 	//删除comments
-	r.HandleFunc("/comments/delete/{id:[0-9]+}", handler.CommentDeleteHandler)
+	r.HandleFunc("/comments/delete/{id:[0-9]+}", AuthBlogHandlerWrapper(handler.CommentDeleteHandler))
 	//upload
-	r.HandleFunc("/uploadfile", handler.UploadHandler)
+	r.HandleFunc("/uploadfile", AuthBlogHandlerWrapper(handler.UploadHandler))
 
 	//管理端的router
 	adminRouter := r.PathPrefix("/admin").Subrouter()
-	adminRouter.HandleFunc("/", handler.LoginPageHandler)
-	adminRouter.HandleFunc("", handler.LoginPageHandler)
-	adminRouter.HandleFunc("/login", handler.LoginHandler)
-	adminRouter.HandleFunc("/logout", handler.LogoutHandler)
-	adminRouter.HandleFunc("/index", handler.AdminIndexHandler)
+	adminRouter.HandleFunc("/", LoginBlogHandlerWrapper(handler.LoginPageHandler))
+	adminRouter.HandleFunc("", LoginBlogHandlerWrapper(handler.LoginPageHandler))
+	adminRouter.HandleFunc("/login", BlogHandlerWrapper(handler.LoginHandler))
+	adminRouter.HandleFunc("/logout", BlogHandlerWrapper(handler.LogoutHandler))
+	adminRouter.HandleFunc("/index", AuthBlogHandlerWrapper(handler.AdminIndexHandler))
 
-	adminRouter.HandleFunc("/blogs", handler.AdminBlogListHandler)          //get:博客列表 post:上传博客
-	adminRouter.HandleFunc("/blogs/search", handler.AdminBlogSearchHandler) //post:搜索
-	adminRouter.HandleFunc("/blogs/input", handler.AdminBlogInputHandler)   //get:返回写博客页面
-	// adminRouter.HandleFunc("/blogs/{id:[0-9]+}/intput", handler.AdminBlogUpdateHandler) //get:更新博客页面
-	// adminRouter.HandleFunc("/blogs/{id:[0-9]+}/delete", handler.AdminBlogDeleteHandler) //get:删除博客
+	adminRouter.HandleFunc("/blogs", AuthBlogHandlerWrapper(handler.AdminBlogListHandler))                      //get:博客列表 post:上传博客
+	adminRouter.HandleFunc("/blogs/search", AuthBlogHandlerWrapper(handler.AdminBlogSearchHandler))             //post:搜索
+	adminRouter.HandleFunc("/blogs/input", AuthBlogHandlerWrapper(handler.AdminBlogInputHandler))               //get:返回写博客页面
+	adminRouter.HandleFunc("/blogs/{id:[0-9]+}/input", AuthBlogHandlerWrapper(handler.AdminBlogUpdateHandler))  //get:更新博客页面
+	adminRouter.HandleFunc("/blogs/{id:[0-9]+}/delete", AuthBlogHandlerWrapper(handler.AdminBlogDeleteHandler)) //get:删除博客
 
-	r.NotFoundHandler = http.HandlerFunc(handler.NotFoundHandler)
+	//admin type 操作
+	adminRouter.HandleFunc("/types", AuthBlogHandlerWrapper(handler.AdminTypesHandler))
+	adminRouter.HandleFunc("/types/{id:[0-9]+}/input", AuthBlogHandlerWrapper(handler.AdminTypesUpdateHandler))
+	adminRouter.HandleFunc("/types/{id:[0-9]+}/delete", AuthBlogHandlerWrapper(handler.AdminTypesDeleteHandler))
+	adminRouter.HandleFunc("/types/input", AuthBlogHandlerWrapper(handler.AdminTypesInputHandler))
+	//admin tag 操作
+	adminRouter.HandleFunc("/tags", AuthBlogHandlerWrapper(handler.AdminTagsHandler))
+	adminRouter.HandleFunc("/tags/{id:[0-9]+}/input", AuthBlogHandlerWrapper(handler.AdminTagsUpdateHandler))
+	adminRouter.HandleFunc("/tags/{id:[0-9]+}/delete", AuthBlogHandlerWrapper(handler.AdminTagsDeleteHandler))
+	adminRouter.HandleFunc("/tags/input", AuthBlogHandlerWrapper(handler.AdminTagsInputHandler))
+
+	r.NotFoundHandler = http.HandlerFunc(BlogHandlerWrapper(handler.NotFoundHandler))
 }
 
 //记录请求的相关日志
@@ -105,4 +116,22 @@ func getHttpRequestInfo(r *http.Request, detail bool) string {
 		r.Body = ioutil.NopCloser(bytes.NewBuffer(s))
 	}
 	return buffer.String()
+}
+
+func BlogHandlerWrapper(handlerList ...handler.HandlerFunc) http.HandlerFunc {
+	return handler.ContextHandler(handler.DefaultHandlerErrorTerminate, handler.BlogContextInit, handlerList...)
+}
+
+func AuthBlogHandlerWrapper(handlerList ...handler.HandlerFunc) http.HandlerFunc {
+	for i := 0; i < len(handlerList); i++ {
+		handlerList[i] = handler.AuthWrapper(handlerList[i], handler.LoginPageHandler)
+	}
+	return handler.ContextHandler(handler.DefaultHandlerErrorTerminate, handler.BlogContextInit, handlerList...)
+}
+
+func LoginBlogHandlerWrapper(handlerList ...handler.HandlerFunc) http.HandlerFunc {
+	for i := 0; i < len(handlerList); i++ {
+		handlerList[i] = handler.AuthWrapper(handlerList[i], handler.LoginPageHandler)
+	}
+	return handler.ContextHandler(handler.DefaultHandlerErrorTerminate, handler.BlogContextInit, handlerList...)
 }

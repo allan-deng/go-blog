@@ -123,7 +123,7 @@ func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
 	// 	}
 	// }
 	//save操作会自动添加连接
-	return s.mysqlDb.Save(blog).Error
+	return s.mysqlDb.Omit("CreateTime", "UpdateTime").Save(blog).Error
 }
 
 func (s *BlogRepository) FindBlogById(blogId int64) (*model.Blog, error) {

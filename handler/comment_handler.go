@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"html/template"
 	"net/http"
-	"path"
 	"strconv"
 	"strings"
 
@@ -11,67 +9,44 @@ import (
 	blogmodel "allandeng.cn/allandeng/go-blog/model"
 	"allandeng.cn/allandeng/go-blog/repository"
 	"allandeng.cn/allandeng/go-blog/service"
-	"github.com/Masterminds/sprig"
 	"github.com/gorilla/mux"
 )
 
 // path: "/comments" post
-func CommentCreateHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-
+func CommentCreateHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
-	err := r.ParseForm()
-	if err != nil {
-		panic(err)
-	}
 
-	parentid := r.PostFormValue("parentComment.id")
-	blogid := r.PostFormValue("blog.id")
-	nickname := r.PostFormValue("nickname")
-	email := r.PostFormValue("email")
-	content := r.PostFormValue("content")
-	captcha := r.PostFormValue("captchacode")
+	form := NewPostForm(r)
+
+	parentid := form.GetInt("parentComment.id")
+	blogid := form.GetInt("blog.id")
+	nickname := form.GetString("nickname")
+	email := form.GetString("email")
+	content := form.GetString("content")
+	captcha := form.GetString("captchacode")
 	log.Debugf("Received the form: %v, Comment blogid: %s, parentid: %s, content: %s,nickname: %s,email: %s ", r.PostForm, blogid, parentid, content, nickname, email)
-	bid, _ := strconv.Atoi(blogid)
-	pid, _ := strconv.Atoi(parentid)
+	bid := blogid
+	pid := parentid
 
-	session, err := store.Get(r, "cookie-name")
-	if err != nil {
-		log.Errorf("Error get session failed, host: %s,cookie-name： %s, err: %s", r.Host, r.Header.Get("cookie-name"), err)
-		panic(err)
-	}
-
-	model := make(map[string]interface{})
-	model["commentmassage"] = ""
-	if captchaSession, ok := session.Values["captcha"]; !ok || strings.ToLower(captchaSession.(string)) != strings.ToLower(captcha) {
+	ctx.Model["commentmassage"] = ""
+	if captchaSession, ok := ctx.Session.Values["captcha"]; !ok || strings.ToLower(captchaSession.(string)) != strings.ToLower(captcha) {
 		log.Errorf("Error captcha failed, captcha: %s, host: %s", captcha, r.Host)
-		model["commentmassage"] = "验证码错误，请点击验证码刷新！"
+		ctx.Model["commentmassage"] = "验证码错误，请点击验证码刷新！"
 		comments, err := service.ListCommentByBlogId(int64(bid))
 		if err != nil {
 			log.Errorf("Error can't find blog comments, blogid: %s ,err: %s", bid, err)
 		}
-		model["comments"] = comments
-
-		base := path.Base("views/_fragments-comment.html")
-		err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/_fragments-comment.html")).Execute(w, model)
-
-		if err != nil {
-			panic(err)
-		}
+		ctx.Model["comments"] = comments
+		RenderTemplate(ctx, w, r, "views/_fragments-comment.html")
 		return
 	}
 
 	admin := false
 	avater := config.GlobalMassage.CommentAvatar
-	if u, ok := session.Values["user"].(blogmodel.User); ok {
+	if u, ok := ctx.Session.Values["user"].(blogmodel.User); ok {
 		admin = true
 		avater = u.Avatar
 	}
@@ -85,57 +60,42 @@ func CommentCreateHandler(w http.ResponseWriter, r *http.Request) {
 		ParentCommentID: int64(pid),
 		AdminComment:    admin,
 	}
-	_, err = repository.GetCommentRepository().CreateComment(comment)
+	_, err := repository.GetCommentRepository().CreateComment(comment)
 	if err != nil {
-		log.Errorf("Error add comment failed,comment:%v , err： %s", comment, err)
-		panic(err)
+		ctx.AddError(r, "Error add comment failed,comment:%v , err： %s", comment, err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
 	comments, err := service.ListCommentByBlogId(int64(bid))
 	if err != nil {
-		log.Errorf("Error can't find blog comments, blogid: %s ,err: %s", bid, err)
+		ctx.AddError(r, "Error can't find blog comments, blogid: %s ,err: %s", bid, err)
 	}
-	model["comments"] = comments
+	ctx.Model["comments"] = comments
 
-	base := path.Base("views/_fragments-comment.html")
-	err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/_fragments-comment.html")).Execute(w, model)
-
-	if err != nil {
-		panic(err)
-	}
+	RenderTemplate(ctx, w, r, "views/_fragments-comment.html")
 }
 
 // path: "/comments/delete/{id}"
-func CommentDeleteHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-
+func CommentDeleteHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	idstr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idstr)
 	if err != nil || id <= 0 {
-		log.Errorf("Error commentid format error, id: %s ,err: %s", idstr, err)
-		panic(err)
+		ctx.AddError(r, "Error commentid format error, id: %s ,err: %s", idstr, err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
 	comment, err := repository.GetCommentRepository().FindCommentById(int64(id))
 	if err != nil {
-		log.Errorf("Error Comments do not have this ID, id: %s,err： %s", id, err)
-		NotFoundHandler(w, r)
+		ctx.AddError(r, "Error Comments do not have this ID, id: %s,err： %s", id, err)
+		ctx.Next(NotFoundHandler)
 		return
 	}
 	blogid := strconv.Itoa(int(comment.BlogID))
 
-	session, err := store.Get(r, "cookie-name")
-	if err != nil {
-		log.Errorf("Error get session failed, host: %s,cookie-name： %s, err: %s", r.Host, r.Header.Get("cookie-name"), err)
-		panic(err)
-	}
-	if _, ok := session.Values["user"].(blogmodel.User); !ok {
-		log.Errorf("Error no permission to delete comments, comment id: %s , host: %s", id, r.Host)
+	if _, ok := ctx.Session.Values["user"].(blogmodel.User); !ok {
+		ctx.AddError(r, "Error no permission to delete comments, comment id: %s , host: %s", id, r.Host)
 		http.Redirect(w, r, "/blog/"+blogid, http.StatusTemporaryRedirect)
 		return
 	}

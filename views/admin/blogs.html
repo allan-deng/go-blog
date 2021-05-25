@@ -57,6 +57,15 @@
 
         <!--表格-->
         <div id="table-container">
+
+            <!--操作提示-->
+            {{if gt (len .notice) 0}}
+            <div class="ui success message">
+                <i class="close icon"></i>
+                <div class="header">提示：</div>
+                <p >{{.notice}}</p>
+            </div>
+            {{end}}
             <table th:fragment="blogList" class="ui compact teal table">
                 <thead>
                 <tr>
@@ -91,15 +100,7 @@
                 </tbody>
                 
             </table>
-
-            <!--操作提示-->
-            {{if gt (len .notice) 0}}
-            <div class="ui success message">
-                <i class="close icon"></i>
-                <div class="header">提示：</div>
-                <p >{{.notice}}</p>
-            </div>
-            {{end}}
+           
         </div>
 
     </div>

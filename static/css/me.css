@@ -200,6 +200,15 @@ body {
     margin: auto !important;
 }
 
+blockquote {
+    padding: 0 1em !important;
+    color: #6a737d !important;
+    border-left: .25em solid #dfe2e5 !important;
+    margin: 0 !important;
+    margin-bottom: 16px !important;
+    margin-top: 0 !important;
+}
+
 /*----color-----*/
 .m-black {
     color: #333 !important;

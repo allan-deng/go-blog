@@ -77,12 +77,14 @@
                 <div class="ui attached segment m-shadow-small">                  
                     <div class="ui middle aligned two column grid" >
                         <div class="column "> 
-                            {{if .page.First}}                
+                            {{if .page.First}}
+                            {{else}}                
                             <a href="/?page={{sub .page.Index 1}}" class="ui small blue basic button">上一页</a>     
                             {{end}}                       
                         </div>
                         <div class="right aligned column ">
-                            {{if .page.Last}}     
+                            {{if .page.Last}} 
+                            {{else}}      
                             <a href="/?page={{add .page.Index 1}}" class="ui small blue basic button">下一页</a>
                             {{end}} 
                         </div>

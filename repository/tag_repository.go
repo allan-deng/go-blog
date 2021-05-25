@@ -77,9 +77,7 @@ func (s *TagRepository) UpdateTag(tag *model.Tag) error {
 
 func (s *TagRepository) FindTagById(tagId int64) (*model.Tag, error) {
 	tag := &model.Tag{}
-	return tag, s.mysqlDb.Preload("Tags", func(db *gorm.DB) *gorm.DB {
-		return db.Omit("content")
-	}).First(tag, tagId).Error
+	return tag, s.mysqlDb.First(tag, tagId).Error
 }
 
 func (s *TagRepository) FindTagByName(tagName string) (*model.Tag, error) {
@@ -137,7 +135,6 @@ func (s *TagRepository) FindTop(page *Page) ([]model.Tag, error) {
 }
 
 func (s *TagRepository) FindAll() ([]model.Tag, error) {
-	//TODO:
 	var res []model.Tag
 	// return res, s.mysqlDb.Preload("Tags", func(db *gorm.DB) *gorm.DB {
 	// 	return db.Omit("content")

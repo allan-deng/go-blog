@@ -173,11 +173,11 @@
     
                                 </form>
                                 <!--操作提示-->
-                                {{if gt (len .commentmassage) 0}}
+                                {{if gt (len .notice) 0}}
                                 <div class="ui success message" >
                                     <i class="close icon"></i>
                                     <div class="header">提示：</div>
-                                    <p >{{.commentmassage}}</p>
+                                    <p >{{.notice}}</p>
                                 </div>
                                 {{end}}
                             </div>

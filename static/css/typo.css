@@ -169,7 +169,7 @@ q:before, q:after {
 
 /* 让链接在 hover 状态下显示下划线 */
 .typo a {
-    color: #1abc9c;
+    color: #4183c4;
 }
 
 .typo a:hover {
@@ -177,7 +177,7 @@ q:before, q:after {
 }
 
 .typo a {
-    border-bottom: 1px solid #1abc9c;
+    border-bottom: 1px solid #4183c4;
 }
 
 .typo a:hover {

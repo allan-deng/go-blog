@@ -13,36 +13,44 @@
                     登录到账号
                 </div>
             </h1>
-            <form class="ui large form" method="post" action="/admin/login">
-                <div class="ui segment">
-                    <div class="field">
-                        <div class="ui left icon input">
-                            <i class="user icon"></i>
-                            <input type="text" name="username" placeholder="用户名">
+            <div class="login">
+                <form class="ui large form" method="post" action="/admin/login" onclick="return loginSubmit()">
+                    <div class="ui segment">
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="user icon"></i>
+                                <input type="text" name="username" placeholder="用户名">
+                            </div>
                         </div>
-                    </div>
-                    <div class="field">
-                        <div class="ui left icon input">
-                            <i class="lock icon"></i>
-                            <input type="password" name="password" placeholder="密码">
+                        <div class="field">
+                            <div class="ui left icon input">
+                                <i class="lock icon"></i>
+                                <input type="password" id="password" placeholder="密码">
+                                <input type="hidden" id="password_md5" name="password">
+                            </div>
                         </div>
-                    </div>
-                    <div class="field m-mobile-wide  m-magin-bottom-small">
-                        <div class="ui input" >
-                            <input type="text" name="captchacode" placeholder="验证码" style="max-width: 200px">
+                        <div class="field m-mobile-wide  m-magin-bottom-small">
+                            <div class="ui input" >
+                                <input type="text" name="captchacode" placeholder="验证码" style="max-width: 200px">
 
-                            <div id="captchaImg" >
-                                <div>
-                                    <img  onclick="changeCaptcha()" src="data:img/png;base64, {{.captcha}}" alt="点击更换" style="max-width: 100px">
+                                <div id="captchaImg" >
+                                    <div>
+                                        <img  onclick="changeCaptcha()" src="data:img/png;base64, {{.captcha}}" alt="点击更换" style="max-width: 100px">
+                                    </div>
                                 </div>
                             </div>
 
                         </div>
-
+                        <button class="ui fluid large teal submit button"  >登 录</button>
                     </div>
-                    <button class="ui fluid large teal submit button">登 录</button>
-                </div>
-            </form>
+                    <div class="ui error mini message"></div>
+            {{if gt (len .notice) 1}}
+            <div class="ui mini negative message">{{.notice}}</div>
+            {{end}}             
+                </form>
+            </div>
+            <iframe id="loginIframe" name="login_iframe" style="display:none;"></iframe>
+            
         </div>
     </div>
 </div>
@@ -50,6 +58,7 @@
 {{template "script"}}
 
 <!--顶部导航栏菜单按钮的显示与隐藏-->
+<script src="/static/js/md5.js"></script>
 <script>
     $('.ui.form').form({
         fields: {
@@ -83,6 +92,11 @@
     function changeCaptcha() {
        $("#captchaImg").load("/captcha");
     }
+    //
+    function loginSubmit() {
+    $('#password_md5').val(MD5($('#password').val()))
+    return true;
+    }   
 </script>
 </body>
 </html>

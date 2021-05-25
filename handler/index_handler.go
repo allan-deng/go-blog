@@ -1,50 +1,35 @@
 package handler
 
 import (
-	"html/template"
 	"net/http"
-	"path"
 	"strconv"
 
-	"allandeng.cn/allandeng/go-blog/config"
 	blogmodel "allandeng.cn/allandeng/go-blog/model"
 	"allandeng.cn/allandeng/go-blog/repository"
 	"allandeng.cn/allandeng/go-blog/service"
 	"allandeng.cn/allandeng/go-blog/util"
-	"github.com/Masterminds/sprig"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
-)
-
-var (
-	// key must be 16, 24 or 32 bytes long (AES-128, AES-192 or AES-256)
-	key   = []byte("super-secret-key")
-	store = sessions.NewCookieStore(key)
 )
 
 // path:"/"
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-	model := make(map[string]interface{})
-
+func IndexHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	//get types
 	ptpye := repository.NewPage(1, 6)
 	types, err := repository.GetTypeRepository().FindTop(&ptpye)
-	model["types"] = types
+	ctx.Model["types"] = types
 	if err != nil {
-		panic(err)
+		ctx.AddError(r, "Error cant find type, err:%s", err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 	//get types
 	ptag := repository.NewPage(1, 10)
 	tags, err := repository.GetTagRepository().FindTop(&ptag)
-	model["tags"] = tags
+	ctx.Model["tags"] = tags
 	if err != nil {
-		panic(err)
+		ctx.AddError(r, "Error cant find tag, err:%s", err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
 	query := r.URL.Query()
@@ -63,221 +48,144 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		pblog.Index = 1
 		blogs, err = repository.GetBlogRepository().FindAll(&pblog)
 	}
-	model["blogs"] = blogs
+	ctx.Model["blogs"] = blogs
 	if err != nil {
-		panic(err)
+		ctx.AddError(r, "Error cant find blog, err:%s", err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
 	//get recommand blogs
 	precommands := repository.NewPage(1, 8)
 	recommands, err := repository.GetBlogRepository().FindRecommendTop(&precommands)
-	model["recommands"] = recommands
+	ctx.Model["recommands"] = recommands
 	if err != nil {
-		panic(err)
+		ctx.AddError(r, "Error cant find recommand, err:%s", err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
 	pblog.Update()
-	model["page"] = pblog
-	model["pagetitle"] = "首页"
-	model["active"] = 1
-	model["massage"] = config.GlobalMassage
-	base := path.Base("views/index.html")
-	err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/index.html", "views/_fragments.html")).Execute(w, model)
-
-	if err != nil {
-		panic(err)
-	}
+	ctx.Model["page"] = pblog
+	ctx.Model["pagetitle"] = "首页"
+	ctx.Model["active"] = 1
+	RenderTemplate(ctx, w, r, "views/index.html", "views/_fragments.html")
 }
 
 // path:"/footer/newblog"
-func NewBlogHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-	model := make(map[string]interface{})
+func NewBlogHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	//get recommand blogs
 	pnewblogs := repository.NewPage(1, 3)
 	newblogs, err := repository.GetBlogRepository().FindRecommendTop(&pnewblogs)
-	model["newblogs"] = newblogs
+	ctx.Model["newblogs"] = newblogs
 	if err != nil {
-		panic(err)
+		ctx.AddError(r, "Error cant get footer, err:%s", err)
+		ctx.Next(ErrorHandler)
+		return
 	}
-	base := path.Base("views/_fragments-newblog.html")
-	err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/_fragments-newblog.html")).Execute(w, model)
-
-	if err != nil {
-		panic(err)
-	}
+	RenderTemplate(ctx, w, r, "views/_fragments-newblog.html")
 }
 
 // path:"/search"
-func SearchHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
+func SearchHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
-	err := r.ParseForm()
-	if err != nil {
-		panic(err)
-	}
 
-	query := r.PostFormValue("query")
+	form := NewPostForm(r)
+	query := form.GetString("query")
 	log.Debugf("Received the form: %v,Search blog with : %s", r.PostForm, query)
-	model := make(map[string]interface{})
-	model["query"] = query
+
+	ctx.Model["query"] = query
 
 	//search blogs
 	pblog := repository.NewPage(1, 1000)
 	blogs, err := repository.GetBlogRepository().FindByQuery(query, &pblog)
 	pblog.Update()
-	model["blogs"] = blogs
-	model["page"] = pblog
+	ctx.Model["blogs"] = blogs
+	ctx.Model["page"] = pblog
 	if err != nil {
-		panic(err)
+		ctx.AddError(r, "Error cant find blog by query, query:%s err:%s", query, err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
-	model["pagetitle"] = "搜索结果:" + query
-	model["active"] = 0
-	model["massage"] = config.GlobalMassage
-	base := path.Base("views/search.html")
-	err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/search.html", "views/_fragments.html")).Execute(w, model)
-
-	if err != nil {
-		panic(err)
-	}
-
+	ctx.Model["pagetitle"] = "搜索结果:" + query
+	ctx.Model["active"] = 0
+	RenderTemplate(ctx, w, r, "views/search.html", "views/_fragments.html")
 }
 
 // path: /blog/{id}
-func BlogHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-	model := make(map[string]interface{})
+func BlogHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 
 	idstr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idstr)
 	if err != nil || id <= 0 {
-		log.Errorf("Error blog format error, id: %s ,err: %s", idstr, err)
-		panic(err)
+		ctx.AddError(r, "Error blog format error, id: %s ,err: %s", idstr, err)
+		ctx.Next(ErrorHandler)
+		return
 	}
 
 	blog, err := service.GetAndConvertBlog(int64(id))
 	if err != nil {
-		log.Errorf("Error blog not found, id: %s ,err: %s", idstr, err)
-		NotFoundHandler(w, r)
+		ctx.AddError(r, "Error blog not found, id: %s ,err: %s", idstr, err)
+		ctx.Next(ErrorHandler)
 		return
 	}
-	model["blog"] = blog
+	ctx.Model["blog"] = blog
 
 	comments, err := service.ListCommentByBlogId(int64(id))
 	if err != nil {
-		log.Errorf("Error can't find blog comments, blogid: %s ,err: %s", idstr, err)
+		ctx.AddError(r, "Error can't find blog comments, blogid: %s ,err: %s", idstr, err)
+		ctx.Next(ErrorHandler)
+		return
 	}
-	model["comments"] = comments
+	ctx.Model["comments"] = comments
 
 	str, image := util.GetCaptcha(4)
+	ctx.Session.Values["captcha"] = str
+	ctx.Session.Save(r, w)
 
-	session, _ := store.Get(r, "cookie-name")
-	session.Values["captcha"] = str
-	session.Save(r, w)
+	ctx.Model["captcha"] = image
 
-	model["captcha"] = image
-
-	if _, ok := session.Values["user"].(blogmodel.User); ok {
-		model["admin"] = true
+	if _, ok := ctx.Session.Values["user"].(blogmodel.User); ok {
+		ctx.Model["admin"] = true
 	}
 
-	model["pagetitle"] = blog.Title
-	model["active"] = 0
-	model["massage"] = config.GlobalMassage
-	model["commentmassage"] = ""
-	base := path.Base("views/blog.html")
-	err = template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/blog.html", "views/_fragments.html")).Execute(w, model)
+	ctx.Model["pagetitle"] = blog.Title
+	ctx.Model["active"] = 0
 
-	if err != nil {
-		panic(err)
-	}
+	RenderTemplate(ctx, w, r, "views/blog.html", "views/_fragments.html")
 }
 
 // path:"/captcha"
-func CaptchaHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-	model := make(map[string]interface{})
-
+func CaptchaHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	str, image := util.GetCaptcha(4)
-	session, _ := store.Get(r, "cookie-name")
-	session.Values["captcha"] = str
-	session.Save(r, w)
+	ctx.Session.Values["captcha"] = str
+	ctx.Session.Save(r, w)
 
-	model["captcha"] = image
-	base := path.Base("views/_fragments-captcha.html")
-	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/_fragments-captcha.html")).Execute(w, model)
+	ctx.Model["captcha"] = image
 
-	if err != nil {
-		panic(err)
-	}
+	RenderTemplate(ctx, w, r, "views/_fragments-captcha.html")
 }
 
 // path: "/about"
-func AboutHandler(w http.ResponseWriter, r *http.Request) {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Errorf("Error in index_handler : %s", err)
-			ErrorHandler(w, r)
-		}
-	}()
-	model := make(map[string]interface{})
+func AboutHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 
-	model["pagetitle"] = "关于我"
-	model["active"] = 5
-	model["massage"] = config.GlobalMassage
-	model["commentmassage"] = ""
-	base := path.Base("views/about.html")
-	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/about.html", "views/_fragments.html", "views/_fragments-aboutme.html")).Execute(w, model)
-
-	if err != nil {
-		panic(err)
-	}
+	ctx.Model["pagetitle"] = "关于我"
+	ctx.Model["active"] = 5
+	RenderTemplate(ctx, w, r, "views/about.html", "views/_fragments.html", "views/_fragments-aboutme.html")
 }
 
-func ErrorHandler(w http.ResponseWriter, r *http.Request) {
-	model := make(map[string]interface{})
-	model["massage"] = config.GlobalMassage
-	model["active"] = 0
-	model["pagetitle"] = "500-服务器错误"
-	base := path.Base("views/error/500.html")
-	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/error/500.html", "views/_fragments.html")).Execute(w, model)
-	if err != nil {
-		log.Errorf("Error in error_handler : %s", err)
-	}
+func ErrorHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
+	ctx.Model["active"] = 0
+	ctx.Model["pagetitle"] = "500-服务器错误"
+	RenderTemplate(ctx, w, r, "views/error/500.html", "views/_fragments.html")
 }
 
-func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	model := make(map[string]interface{})
-	model["massage"] = config.GlobalMassage
-	model["active"] = 0
-	model["pagetitle"] = "404-找不到网页"
-	base := path.Base("views/error/404.html")
-	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles("views/error/404.html", "views/_fragments.html")).Execute(w, model)
-	if err != nil {
-		log.Errorf("Error in error_handler : %s", err)
-	}
+func NotFoundHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
+	ctx.Model["active"] = 0
+	ctx.Model["pagetitle"] = "404-找不到网页"
+	RenderTemplate(ctx, w, r, "views/error/404.html", "views/_fragments.html")
 }

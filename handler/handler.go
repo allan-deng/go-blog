@@ -2,11 +2,15 @@ package handler
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
+	"path"
 	"runtime"
 	"strconv"
 
+	"allandeng.cn/allandeng/go-blog/config"
 	blogmodel "allandeng.cn/allandeng/go-blog/model"
+	"github.com/Masterminds/sprig"
 	"github.com/gorilla/sessions"
 )
 
@@ -15,6 +19,9 @@ type HandlerFunc func(ctx *Context, w http.ResponseWriter, r *http.Request)
 
 //handlerError的集中处理函数
 type HandlerErrorTerminate func(errs ...HandlerError)
+
+//context初始化函数
+type ContextInitFunc func(ctx *Context)
 
 //handler上下文
 type Context struct {
@@ -26,6 +33,34 @@ type Context struct {
 	Session *sessions.Session
 	//请求处理过程的所有错误
 	Errors []HandlerError
+	//下一个执行的handler
+	NextHandler HandlerFunc
+}
+
+//添加错误
+func (s *Context) AddError(r *http.Request, format string, a ...interface{}) {
+	s.Errors = append(s.Errors, NewHandlerError(fmt.Sprintf(format, a...), r, 2))
+}
+
+//判断是否存在错误
+func (s *Context) HasError() bool {
+	if len(s.Errors) > 0 {
+		return true
+	}
+	return false
+}
+
+//添加下一个执行的handler
+func (s *Context) Next(nextHandler HandlerFunc) {
+	s.NextHandler = nextHandler
+}
+
+//判断是否有下一个handler
+func (s *Context) HasNextHandler() bool {
+	if s.NextHandler == nil {
+		return false
+	}
+	return true
 }
 
 //请求处理过程中的错误
@@ -40,10 +75,10 @@ type HandlerError struct {
 }
 
 //获取一个HandlerError
-func NewHandlerError(err string, r *http.Request) HandlerError {
+func NewHandlerError(err string, r *http.Request, skip int) HandlerError {
 	handlerError := &HandlerError{}
-	//Caller入参为1，即获取NewHandlerError调用时的相关信息
-	funcName, file, line, ok := runtime.Caller(1)
+	//Caller入参为调用栈的层级
+	funcName, file, line, ok := runtime.Caller(skip)
 	if ok {
 		handlerError.funcName = runtime.FuncForPC(funcName).Name()
 		handlerError.fileName = file
@@ -62,14 +97,16 @@ func (s *HandlerError) Error() string {
 	return fmt.Sprintf("Hadnler error occurred. func: %s - %s:%s; Url: %s|%s; Host: %s; Err: %s ", s.funcName, s.fileName, line, s.url, s.method, s.host, s.err)
 }
 
-//HandlerFunc到http.HandlerFunc的包装类
-func ContextHandler(errHandler HandlerErrorTerminate, handlerList ...HandlerFunc) http.HandlerFunc {
-	ctx := &Context{
-		Model:     make(map[string]interface{}),
-		Attribute: make(map[string]interface{}),
-		Errors:    make([]HandlerError, 0),
-	}
+//HandlerFunc到http.HandlerFunc的包装
+func ContextHandler(errHandler HandlerErrorTerminate, contextinit ContextInitFunc, handlerList ...HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := &Context{
+			Model:     make(map[string]interface{}),
+			Attribute: make(map[string]interface{}),
+			Errors:    make([]HandlerError, 0),
+		}
+		contextinit(ctx)
+
 		//获取session
 		session, err := store.Get(r, "cookie-name")
 		for key, value := range session.Values {
@@ -82,7 +119,13 @@ func ContextHandler(errHandler HandlerErrorTerminate, handlerList ...HandlerFunc
 
 		//处理所有handler
 		for _, handler := range handlerList {
+			if ctx.HasError() {
+				break
+			}
 			handler(ctx, w, r)
+			if ctx.HasNextHandler() {
+				ctx.NextHandler(ctx, w, r)
+			}
 		}
 		//ctx中错误处理
 		errHandler(ctx.Errors...)
@@ -111,9 +154,32 @@ func AuthWrapper(handler HandlerFunc, unauthHandler HandlerFunc) HandlerFunc {
 				ctx.Model["user"] = user
 				log.Debugf("Already logged in user: %s", user.Nickname)
 				handler(ctx, w, r)
+				return
 			}
 		}
-		ctx.Errors = append(ctx.Errors, NewHandlerError("Not login!", r))
+		ctx.AddError(r, "Not login!")
 		unauthHandler(ctx, w, r)
+	}
+}
+
+//blog常用model的初始化
+func BlogContextInit(ctx *Context) {
+	ctx.Model["pagetitle"] = "Allan的个人博客"
+	ctx.Model["active"] = 1
+	ctx.Model["secondactive"] = 1
+	ctx.Model["massage"] = config.GlobalMassage
+	ctx.Model["notice"] = ""
+}
+
+//渲染模板
+func RenderTemplate(ctx *Context, w http.ResponseWriter, r *http.Request, templateFiles ...string) {
+	if len(templateFiles) < 1 {
+		ctx.AddError(r, "No input template file!")
+		return
+	}
+	base := path.Base(templateFiles[0])
+	err := template.Must(template.New(base).Funcs(sprig.FuncMap()).Funcs(templateFunc).ParseFiles(templateFiles...)).Execute(w, ctx.Model)
+	if err != nil {
+		ctx.AddError(r, "Render template error! err: %s", err)
 	}
 }

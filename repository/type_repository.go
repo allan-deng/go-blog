@@ -59,6 +59,11 @@ func (s *TypeRepository) CreateType(blogType *model.Type) (int64, error) {
 }
 
 func (s *TypeRepository) DeleteType(typeId int64) error {
+	p := NewPage(1, 10000)
+	blogs, _ := GetBlogRepository().FindBlogByTypeId(typeId, &p)
+	if len(blogs) > 0 {
+		return errors.New("There are  blogs under this type, cant delete type. ")
+	}
 	return s.mysqlDb.Delete(&model.Type{}, typeId).Error
 }
 

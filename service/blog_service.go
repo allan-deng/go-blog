@@ -1,13 +1,18 @@
 package service
 
 import (
+	"bytes"
 	"sort"
 
 	"allandeng.cn/allandeng/go-blog/config"
 	"allandeng.cn/allandeng/go-blog/model"
 	"allandeng.cn/allandeng/go-blog/repository"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/op/go-logging"
-	"github.com/russross/blackfriday/v2"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
 var log *logging.Logger
@@ -45,7 +50,53 @@ func GetBlogIncreaseViews(blogid int64) (*model.Blog, error) {
 }
 
 func MarkdownToHtml(markdown string) string {
-	return string(blackfriday.Run([]byte(markdown), blackfriday.WithExtensions(blackfriday.CommonExtensions|blackfriday.HardLineBreak)))
+	//convert markdown to html
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(),
+			parser.WithAttribute(),
+		),
+		goldmark.WithRendererOptions(
+			html.WithHardWraps(),
+			html.WithXHTML(),
+			html.WithUnsafe(),
+		),
+	)
+	var buf bytes.Buffer
+	if err := md.Convert([]byte(markdown), &buf); err != nil {
+		panic(err)
+	}
+
+	//html add attribute
+	doc, err := goquery.NewDocumentFromReader(&buf)
+	if err != nil {
+		panic(err)
+	}
+	docAddAttr(doc, "h1", "class", "ui header")
+	docAddAttr(doc, "h2", "class", "ui header")
+	docAddAttr(doc, "h3", "class", "ui header")
+	docAddAttr(doc, "h4", "class", "ui header")
+	docAddAttr(doc, "h5", "class", "ui header")
+	docAddAttr(doc, "h6", "class", "ui header")
+	docAddAttr(doc, "a", "target", "_blank")
+	docAddAttr(doc, "img", "class", "ui rounded image m-shadow-small")
+	docAddAttr(doc, "table", "class", "ui celled table")
+	docAddAttr(doc, "code", "class", "token operator language- ")
+
+	res, err := doc.Html()
+	if err != nil {
+		log.Errorf("convert doc to html error! err:%s", err)
+	}
+	return res
+}
+
+func docAddAttr(doc *goquery.Document, tag string, attr string, value string) {
+	doc.Find(tag).Each(func(index int, ele *goquery.Selection) {
+		newValue := ele.AttrOr(attr, "")
+		newValue = newValue + " " + value
+		ele.SetAttr(attr, newValue)
+	})
 }
 
 func ListCommentByBlogId(blogid int64) ([]model.Comment, error) {

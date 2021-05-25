@@ -16,8 +16,12 @@
 # vendor/
 
 ### Log ###
-/log/
+/log
 *.log
+
+### Upload dile ###
+/static/upload/
+
 ### Go Patch ###
 /vendor/
 /Godeps/

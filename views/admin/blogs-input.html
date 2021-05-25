@@ -38,7 +38,7 @@
                 <div class="required field">
                     <!--使用editormd,设置叠放层次置顶-->
                     <div id="md-content" style="z-index: 1 !important;">
-                        <textarea name="content" id="" placeholder="博客内容" style="display: none" value="{{.blog.Content}}"></textarea>
+                        <textarea name="content" id="" placeholder="博客内容" style="display: none" value="{{.blog.Content}}">{{.blog.Content}}</textarea>
                     </div>
 
                 </div>
@@ -96,7 +96,7 @@
                 <div class="required field">
                     <!--文本框-->
                     <div>
-                        <textarea name="description" placeholder="博客描述" value="{{.blog.Description}}" ></textarea>
+                        <textarea name="description" placeholder="博客描述" value="{{.blog.Description}}">{{.blog.Description}}</textarea>
                     </div>
                 </div>
 
