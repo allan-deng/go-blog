@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"allandeng.cn/allandeng/go-blog/model"
 	"github.com/jinzhu/gorm"
@@ -73,6 +74,8 @@ func (s *BlogRepository) InitTable() error {
 }
 
 func (s *BlogRepository) CreateBlog(blog *model.Blog) (int64, error) {
+	blog.CreateTime = time.Now()
+	blog.UpdateTime = time.Now()
 	err := s.mysqlDb.Create(blog).Error
 	//多对多的连接由gorm完成不需要自行添加连接
 	// tags := blog.Tags
@@ -103,6 +106,7 @@ func (s *BlogRepository) DeleteBlog(blogId int64) error {
 }
 
 func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
+	blog.UpdateTime = time.Now()
 	if blog.ID <= 0 {
 		return errors.New("error: cannot update type without id")
 	}
@@ -123,7 +127,7 @@ func (s *BlogRepository) UpdateBlog(blog *model.Blog) error {
 	// 	}
 	// }
 	//save操作会自动添加连接
-	return s.mysqlDb.Omit("CreateTime", "UpdateTime").Save(blog).Error
+	return s.mysqlDb.Omit("CreateTime").Save(blog).Error
 }
 
 func (s *BlogRepository) FindBlogById(blogId int64) (*model.Blog, error) {

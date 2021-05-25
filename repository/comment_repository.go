@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"allandeng.cn/allandeng/go-blog/model"
 	"github.com/jinzhu/gorm"
 )
@@ -62,6 +64,7 @@ func (s *CommentRepository) InitTable() error {
 
 //增
 func (s *CommentRepository) CreateComment(comment *model.Comment) (int64, error) {
+	comment.CreateTime = time.Now()
 	return comment.ID, s.mysqlDb.Create(comment).Error
 }
 
