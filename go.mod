@@ -27,7 +27,6 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/tebeka/strftime v0.1.5 // indirect
 	github.com/yuin/goldmark v1.3.7

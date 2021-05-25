@@ -4,14 +4,14 @@ mysql:
   pwd: root
   dbname: blog
 web:
-  port: 8080
+  port: 9090
   uploadpath : "./static/upload/"
 webpage:
   icpinfo: '鄂ICP备 19011531号-1'
 log:
   prefix: ''
   log-file: true
-  stdout: 'DEBUG'
-  file: 'DEBUG'
-  logfilepath: '../log'
+  stdout: 'INFO'
+  file: 'INFO'
+  logfilepath: './log'
   modulename: 'test-log'

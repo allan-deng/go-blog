@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 
 	"allandeng.cn/allandeng/go-blog/config"
@@ -18,7 +19,7 @@ import (
 type HandlerFunc func(ctx *Context, w http.ResponseWriter, r *http.Request)
 
 //handlerError的集中处理函数
-type HandlerErrorTerminate func(errs ...HandlerError)
+type HandlerErrorTerminate func(ctx *Context, w http.ResponseWriter, r *http.Request)
 
 //context初始化函数
 type ContextInitFunc func(ctx *Context)
@@ -128,14 +129,18 @@ func ContextHandler(errHandler HandlerErrorTerminate, contextinit ContextInitFun
 			}
 		}
 		//ctx中错误处理
-		errHandler(ctx.Errors...)
+		errHandler(ctx, w, r)
 	}
 }
 
 //默认的HandlerError处理
-func DefaultHandlerErrorTerminate(errs ...HandlerError) {
-	for _, err := range errs {
+func DefaultHandlerErrorTerminate(ctx *Context, w http.ResponseWriter, r *http.Request) {
+	for _, err := range ctx.Errors {
 		log.Error(err.Error())
+	}
+	if p := recover(); p != nil {
+		log.Errorf("message push panic: %v . stack: \n %s", p, string(debug.Stack()))
+		ErrorHandler(ctx, w, r)
 	}
 }
 
@@ -152,7 +157,7 @@ func AuthWrapper(handler HandlerFunc, unauthHandler HandlerFunc) HandlerFunc {
 			var ok bool
 			if user, ok = session.Values["user"].(blogmodel.User); ok {
 				ctx.Model["user"] = user
-				log.Debugf("Already logged in user: %s", user.Nickname)
+				log.Infof("Already logged in user: %s", user.Nickname)
 				handler(ctx, w, r)
 				return
 			}

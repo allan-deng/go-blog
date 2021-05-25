@@ -82,6 +82,7 @@ func Register(r *mux.Router) {
 func logMidware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 请求信息写入日志
+		log.Infof("Receipt request, URL:%s, Method:%s, Host:%s, Remote:%s", r.RequestURI, r.Method, r.Host, r.RemoteAddr)
 		log.Debugf("Receipt request : \n %s", getHttpRequestInfo(r, true))
 		next.ServeHTTP(w, r)
 	})

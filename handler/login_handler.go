@@ -41,7 +41,7 @@ func LoginHandler(ctx *Context, w http.ResponseWriter, r *http.Request) {
 	log.Debugf("Received the form: %v, Comment username: %s, password: %s, captcha: %s", r.PostForm, username, password, captcha)
 
 	if captchaSession, ok := ctx.Session.Values["captcha"]; !ok || strings.ToLower(captchaSession.(string)) != strings.ToLower(captcha) {
-		log.Debugf("Login captcha failed, captcha: %s, host: %s", captcha, r.Host)
+		log.Infof("Login captcha failed, captcha: %s, host: %s", captcha, r.Host)
 		ctx.Model["notice"] = "验证码错误"
 		ctx.Next(LoginPageHandler)
 		return
