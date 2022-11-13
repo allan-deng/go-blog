@@ -8,9 +8,12 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strconv"
+	"time"
 
 	"allandeng.cn/allandeng/go-blog/config"
+	"allandeng.cn/allandeng/go-blog/metrics"
 	blogmodel "allandeng.cn/allandeng/go-blog/model"
+	"allandeng.cn/allandeng/go-blog/util"
 	"github.com/Masterminds/sprig"
 	"github.com/gorilla/sessions"
 )
@@ -101,6 +104,10 @@ func (s *HandlerError) Error() string {
 //HandlerFunc到http.HandlerFunc的包装
 func ContextHandler(errHandler HandlerErrorTerminate, contextinit ContextInitFunc, handlerList ...HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		rw := util.NewResponseWriter(w)
+
 		ctx := &Context{
 			Model:     make(map[string]interface{}),
 			Attribute: make(map[string]interface{}),
@@ -123,13 +130,23 @@ func ContextHandler(errHandler HandlerErrorTerminate, contextinit ContextInitFun
 			if ctx.HasError() {
 				break
 			}
-			handler(ctx, w, r)
+			handler(ctx, rw, r)
 			if ctx.HasNextHandler() {
-				ctx.NextHandler(ctx, w, r)
+				ctx.NextHandler(ctx, rw, r)
 			}
 		}
+
 		//ctx中错误处理
-		errHandler(ctx, w, r)
+		errHandler(ctx, rw, r)
+
+		//指标上报
+		elapsed := time.Since(start)
+		url := r.RequestURI
+		method := r.Method
+		code := rw.Status()
+
+		metrics.RequestDurations.WithLabelValues(url, method, strconv.Itoa(code)).Observe(float64(elapsed.Milliseconds()))
+		metrics.TotalRequests.WithLabelValues(url, method, strconv.Itoa(code)).Inc()
 	}
 }
 
