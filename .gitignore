@@ -5,6 +5,8 @@
 *.dll
 *.so
 *.dylib
+go-blog.tar
+go-blog
 
 # Test binary, built with `go test -c`
 *.test
@@ -19,6 +21,8 @@
 /log
 *.log
 
+### tmp ###
+/tmp
 
 ### bin ###
 /bin
