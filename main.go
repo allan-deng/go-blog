@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"allandeng.cn/allandeng/go-blog/metrics"
+
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
 	"allandeng.cn/allandeng/go-blog/config"
@@ -21,6 +23,9 @@ func init() {
 }
 
 func main() {
+	//创建 promethues metrics
+	metrics.Init()
+
 	//创建并注册路由
 	muxRouter := mux.NewRouter()
 	router.Register(muxRouter)

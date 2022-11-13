@@ -1,10 +1,11 @@
 mysql:
-  host: 192.168.80.130:3306
+  host: 127.0.0.1:3306
   user: root
   pwd: root
   dbname: blog
 web:
   port: 9090
+  metrics_port: 9091
   uploadpath : "./static/upload/"
 webpage:
   icpinfo: '鄂ICP备 19011531号-1'

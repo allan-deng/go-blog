@@ -29,8 +29,9 @@ type LogConfig struct {
 }
 
 type WebServer struct {
-	Port       int32  `yaml:"port"`
-	UploadPath string `yaml:"uploadpath"`
+	Port        int32  `yaml:"port"`
+	MetricsPort int32  `yaml:"metrics_port"`
+	UploadPath  string `yaml:"uploadpath"`
 }
 
 type WebPage struct {
