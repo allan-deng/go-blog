@@ -54,4 +54,7 @@ go-blog
 /.idea
 /.vscode
 
-
+## cert and key ##
+/certs
+.crt
+.key

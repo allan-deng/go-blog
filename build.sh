@@ -5,6 +5,7 @@ rm go-blog.tar
 rm -r ./tmp
 
 echo `go version`
+# CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
 go build -o go-blog ./main.go
 
 mkdir tmp

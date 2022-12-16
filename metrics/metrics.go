@@ -33,5 +33,5 @@ func Init() {
 	prometheus.MustRegister(TotalRequests)
 	prometheus.MustRegister(RequestDurations)
 
-	go http.ListenAndServe("127.0.0.1:"+strconv.Itoa(int(config.GlobalConfig.WebServer.MetricsPort)), promhttp.Handler())
+	go http.ListenAndServe("0.0.0.0:"+strconv.Itoa(int(config.GlobalConfig.WebServer.MetricsPort)), promhttp.Handler())
 }

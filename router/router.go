@@ -78,6 +78,24 @@ func Register(r *mux.Router) {
 	r.NotFoundHandler = http.HandlerFunc(BlogHandlerWrapper(handler.NotFoundHandler))
 }
 
+func AdminApiRegister(r *mux.Router) {
+	//添加日志记录器
+	r.Use(logMidware)
+
+	// TODg
+	// r.HandleFunc("/api/blogs/publish", AdminApiHandlerWrapper(api.BlogPublishHandler))
+	// r.HandleFunc("/api/blogs/list", AdminApiHandlerWrapper(api.BlogListHandler))
+
+	// r.HandleFunc("/api/file/upload", AdminApiHandlerWrapper(api.FileUploadHandler))
+	// r.HandleFunc("/api/file/list", AdminApiHandlerWrapper(api.FileListHandler))
+
+	// r.HandleFunc("/api/types/list", AdminApiHandlerWrapper(api.TypeListHandler))
+	// r.HandleFunc("/api/types/add", AdminApiHandlerWrapper(api.TypeAddHandler))
+
+	// r.HandleFunc("/api/tags/list", AdminApiHandlerWrapper(api.TagListHandler))
+	// r.HandleFunc("/api/tags/add", AdminApiHandlerWrapper(api.TagAddHandler))
+}
+
 //记录请求的相关日志
 func logMidware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -135,4 +153,11 @@ func LoginBlogHandlerWrapper(handlerList ...handler.HandlerFunc) http.HandlerFun
 		handlerList[i] = handler.AuthWrapper(handlerList[i], handler.LoginPageHandler)
 	}
 	return handler.ContextHandler(handler.DefaultHandlerErrorTerminate, handler.BlogContextInit, handlerList...)
+}
+
+func AdminApiHandlerWrapper(handlerList ...handler.HandlerFunc) http.HandlerFunc {
+	// for i := 0; i < len(handlerList); i++ {
+	// 	handlerList[i] = handler.SigWrapper(handlerList[i], handler.LoginPageHandler)
+	// }
+	return handler.ContextHandler(handler.DefaultHandlerErrorTerminate, func(ctx *handler.Context) {}, handlerList...)
 }

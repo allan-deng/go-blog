@@ -6,9 +6,14 @@ mysql:
 web:
   port: 9090
   metrics_port: 9091
+  admin_port: 8443
   uploadpath : "./static/upload/"
 webpage:
   icpinfo: '鄂ICP备 19011531号-1'
+mtls:
+  ca_cert: "./certs/localhost/ca.crt"
+  server_cert: "./certs/localhost/server.crt"
+  server_key: "./certs/localhost/server.key"
 log:
   prefix: ''
   log-file: true

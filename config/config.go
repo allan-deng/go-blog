@@ -12,10 +12,17 @@ var GlobalMassage *Massage
 
 //all configuration
 type Config struct {
-	LogConfig LogConfig `yaml:"log"`
-	WebServer WebServer `yaml:"web"`
-	WebPage   WebPage   `yaml:"webpage"`
-	Mysql     Mysql     `yaml:"mysql"`
+	LogConfig LogConfig  `yaml:"log"`
+	WebServer WebServer  `yaml:"web"`
+	WebPage   WebPage    `yaml:"webpage"`
+	Mysql     Mysql      `yaml:"mysql"`
+	MTls      MTlsConfig `yaml:"mtls"`
+}
+
+type MTlsConfig struct {
+	CaCert     string `yaml:"ca_cert"`
+	ServerCert string `yaml:"server_cert"`
+	ServerKey  string `yaml:"server_key"`
 }
 
 //log configuration
@@ -30,6 +37,7 @@ type LogConfig struct {
 
 type WebServer struct {
 	Port        int32  `yaml:"port"`
+	AdminPort   int32  `yaml:"admin_port"`
 	MetricsPort int32  `yaml:"metrics_port"`
 	UploadPath  string `yaml:"uploadpath"`
 }
